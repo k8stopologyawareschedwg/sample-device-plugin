@@ -1,6 +1,6 @@
 # Sample Device Plugin
 
-This is sample device plugin to enable support for sample devices in a kubernetes cluster using the device plugin API.The motivation for this was to emulated devices on a NUMA node basis in a kubernetes environment in case the environment does not have multi numa hardware or for testing purpose. This repo contains two device plugins to be deployed on a two node cluster (one master and one worker node). The devices emulated on various NUMA nodes on a two node cluster is explained in the diagram below:
+This is a sample device plugin repository to enable support for sample devices in a kubernetes cluster using the device plugin API. The motivation for this was to emulated devices on a NUMA node basis in a kubernetes environment in case the environment does not have multi numa hardware or for testing purpose. This repo contains two device plugins to be deployed on a two node cluster (one master and one worker node). The devices emulated on various NUMA nodes on a two node cluster is explained in the diagram below:
 
 ![Setup](numa-topology.png)
 
