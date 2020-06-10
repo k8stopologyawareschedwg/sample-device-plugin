@@ -73,7 +73,7 @@ test-B:
 	kubectl create -f manifests/test-deviceB.yaml
 
 clean:
-		rm -f ./bin/devicepluginA
-		rm -f ./bin/devicepluginB
-		kubectl delete -f manifests/devicepluginA-ds.yaml
-		kubectl delete -f manifests/devicepluginB-ds.yaml
+	rm -f ./bin/devicepluginA
+	rm -f ./bin/devicepluginB
+	kubectl delete -f manifests/devicepluginA-ds.yaml
+	kubectl delete -f manifests/devicepluginB-ds.yaml

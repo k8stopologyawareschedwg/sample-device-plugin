@@ -55,19 +55,6 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 			devName = fmt.Sprintf("tty1%d", i)
 			fpath = fmt.Sprintf("/dev/%s", devName)
 			i++
-			// clean first
-			/*
-				if err := os.RemoveAll(fpath); err != nil {
-					return nil, fmt.Errorf("failed to clean fake device file from previous run: %s", err)
-				}
-
-				f, err := os.Create(fpath)
-				if err != nil && !os.IsExist(err) {
-					return nil, fmt.Errorf("failed to create fake device file: %s", err)
-				}
-
-				f.Close()
-			*/
 			key := fmt.Sprintf("NUMANODE_%s_%s", dev.ID, devName)
 			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
 			klog.Infof("Creating environment variables key: %s:val %s", key, val)
@@ -78,11 +65,6 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 				HostPath:      fpath,
 				Permissions:   "rw",
 			})
-			/*
-				response.Mounts = append(response.Mounts, &pluginapi.Mount{
-					ContainerPath: fpath,
-					HostPath:      fpath,
-				})*/
 		}
 		response.Envs = env
 		responses.ContainerResponses = append(responses.ContainerResponses, response)
@@ -113,12 +95,11 @@ func main() {
 		}
 	}
 
-	//pluginSocksDir := os.Getenv("PLUGIN_SOCK_DIR")
 	klog.Infof("pluginSocksDir: %s", socketDir)
 
 	socketPath := socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
 
-	dp1 := server.NewDevicePluginStub(devs, socketPath, resourceName, false)
+	dp1 := server.NewDevicePlugin(devs, socketPath, resourceName, false)
 	if err := dp1.Start(); err != nil {
 		panic(err)
 

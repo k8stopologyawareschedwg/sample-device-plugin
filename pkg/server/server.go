@@ -17,7 +17,7 @@ import (
 )
 
 // Stub implementation for DevicePlugin.
-type Stub struct {
+type DevicePlugin struct {
 	devs                  []*pluginapi.Device
 	socket                string
 	resourceName          string
@@ -46,9 +46,9 @@ func defaultAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.De
 	return &response, nil
 }
 
-// NewDevicePluginStub returns an initialized DevicePlugin Stub.
-func NewDevicePluginStub(devs []*pluginapi.Device, socket string, name string, preStartContainerFlag bool) *Stub {
-	return &Stub{
+// NewDevicePlugin returns an initialized DevicePlugin Stub.
+func NewDevicePlugin(devs []*pluginapi.Device, socket string, name string, preStartContainerFlag bool) *DevicePlugin {
+	return &DevicePlugin{
 		devs:                  devs,
 		socket:                socket,
 		resourceName:          name,
@@ -62,13 +62,13 @@ func NewDevicePluginStub(devs []*pluginapi.Device, socket string, name string, p
 }
 
 // SetAllocFunc sets allocFunc of the device plugin
-func (m *Stub) SetAllocFunc(f stubAllocFunc) {
+func (m *DevicePlugin) SetAllocFunc(f stubAllocFunc) {
 	m.allocFunc = f
 }
 
 // Start starts the gRPC server of the device plugin. Can only
 // be called once.
-func (m *Stub) Start() error {
+func (m *DevicePlugin) Start() error {
 	err := m.cleanup()
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (m *Stub) Start() error {
 // Stop stops the gRPC server. Can be called without a prior Start
 // and more than once. Not safe to be called concurrently by different
 // goroutines!
-func (m *Stub) Stop() error {
+func (m *DevicePlugin) Stop() error {
 	if m.server == nil {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (m *Stub) Stop() error {
 }
 
 // GetInfo is the RPC which return pluginInfo
-func (m *Stub) GetInfo(ctx context.Context, req *watcherapi.InfoRequest) (*watcherapi.PluginInfo, error) {
+func (m *DevicePlugin) GetInfo(ctx context.Context, req *watcherapi.InfoRequest) (*watcherapi.PluginInfo, error) {
 	klog.Info("GetInfo")
 	return &watcherapi.PluginInfo{
 		Type:              watcherapi.DevicePlugin,
@@ -124,7 +124,7 @@ func (m *Stub) GetInfo(ctx context.Context, req *watcherapi.InfoRequest) (*watch
 }
 
 // NotifyRegistrationStatus receives the registration notification from watcher
-func (m *Stub) NotifyRegistrationStatus(ctx context.Context, status *watcherapi.RegistrationStatus) (*watcherapi.RegistrationStatusResponse, error) {
+func (m *DevicePlugin) NotifyRegistrationStatus(ctx context.Context, status *watcherapi.RegistrationStatus) (*watcherapi.RegistrationStatusResponse, error) {
 	if m.registrationStatus != nil {
 		m.registrationStatus <- *status
 	}
@@ -135,13 +135,7 @@ func (m *Stub) NotifyRegistrationStatus(ctx context.Context, status *watcherapi.
 }
 
 // Register registers the device plugin for the given resourceName with Kubelet.
-func (m *Stub) Register(kubeletEndpoint, resourceName string, pluginSockDir string) error {
-	/*if pluginSockDir != "" {
-		if _, err := os.Stat(pluginSockDir + "DEPRECATION"); err == nil {
-			klog.Info("Deprecation file found. Skip registration.")
-			return nil
-		}
-	}*/
+func (m *DevicePlugin) Register(kubeletEndpoint, resourceName string, pluginSockDir string) error {
 	klog.Info("Deprecation file not found. Invoke registration")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -170,18 +164,18 @@ func (m *Stub) Register(kubeletEndpoint, resourceName string, pluginSockDir stri
 }
 
 // GetDevicePluginOptions returns DevicePluginOptions settings for the device plugin.
-func (m *Stub) GetDevicePluginOptions(ctx context.Context, e *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
+func (m *DevicePlugin) GetDevicePluginOptions(ctx context.Context, e *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
 	return &pluginapi.DevicePluginOptions{PreStartRequired: m.preStartContainerFlag}, nil
 }
 
 // PreStartContainer resets the devices received
-func (m *Stub) PreStartContainer(ctx context.Context, r *pluginapi.PreStartContainerRequest) (*pluginapi.PreStartContainerResponse, error) {
+func (m *DevicePlugin) PreStartContainer(ctx context.Context, r *pluginapi.PreStartContainerRequest) (*pluginapi.PreStartContainerResponse, error) {
 	klog.Infof("PreStartContainer, %+v", r)
 	return &pluginapi.PreStartContainerResponse{}, nil
 }
 
 // ListAndWatch lists devices and update that list according to the Update call
-func (m *Stub) ListAndWatch(e *pluginapi.Empty, s pluginapi.DevicePlugin_ListAndWatchServer) error {
+func (m *DevicePlugin) ListAndWatch(e *pluginapi.Empty, s pluginapi.DevicePlugin_ListAndWatchServer) error {
 	klog.Info("ListAndWatch")
 
 	s.Send(&pluginapi.ListAndWatchResponse{Devices: m.devs})
@@ -197,12 +191,12 @@ func (m *Stub) ListAndWatch(e *pluginapi.Empty, s pluginapi.DevicePlugin_ListAnd
 }
 
 // Update allows the device plugin to send new devices through ListAndWatch
-func (m *Stub) Update(devs []*pluginapi.Device) {
+func (m *DevicePlugin) Update(devs []*pluginapi.Device) {
 	m.update <- devs
 }
 
 // Allocate does a mock allocation
-func (m *Stub) Allocate(ctx context.Context, r *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
+func (m *DevicePlugin) Allocate(ctx context.Context, r *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
 	klog.Infof("Allocate, %+v", r)
 
 	devs := make(map[string]pluginapi.Device)
@@ -214,7 +208,7 @@ func (m *Stub) Allocate(ctx context.Context, r *pluginapi.AllocateRequest) (*plu
 	return m.allocFunc(r, devs)
 }
 
-func (m *Stub) cleanup() error {
+func (m *DevicePlugin) cleanup() error {
 	if err := os.Remove(m.socket); err != nil && !os.IsNotExist(err) {
 		return err
 	}
