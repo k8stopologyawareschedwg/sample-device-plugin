@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dp-ab-taerror
+spec:
+  selector:
+      matchLabels:
+        name: test
+  template:
+    metadata:
+      labels:
+        name: test
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+      - name: test-container-1
+        image: nginx
+        resources:
+          limits:
+            cpu: 1
+            memory: 200Mi
+            example.com/deviceA: 3
+          requests:
+            cpu: 1
+            memory: 200Mi
+            example.com/deviceA: 3

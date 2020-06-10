@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dp-ab
+spec:
+  selector:
+      matchLabels:
+        name: test # Label selector that determines which Pods belong to the DaemonSet
+  template:
+    metadata:
+      labels:
+        name: test # Pod template's label selector
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      hostNetwork: true
+      containers:
+      - name: test-dp-container
+        image: nginx
+        resources:
+          limits:
+            example.com/deviceA: 1
+            example.com/deviceB: 1
+          requests:
+            example.com/deviceA: 1
+            example.com/deviceB: 1

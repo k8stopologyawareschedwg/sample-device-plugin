@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-b-ds
+spec:
+  selector:
+      matchLabels:
+        name: device-plugin-b
+  template:
+    metadata:
+      labels:
+        name: device-plugin-b
+    spec:
+      hostNetwork: true
+      containers:
+      - name: device-plugin-b-container
+        image: quay.io/swsehgal/device-plugin-b:latest
+        volumeMounts:
+        - name: kubeletsockets
+          mountPath: /var/lib/kubelet/device-plugins
+        # - name: devdir
+        #   mountPath: /dev
+      volumes:
+      - name: kubeletsockets
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      # - name: devdir
+      #   hostPath:
+      #     path: /dev

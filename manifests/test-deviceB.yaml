@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dp-b
+spec:
+  selector:
+      matchLabels:
+        name: test # Label selector that determines which Pods belong to the DaemonSet
+  template:
+    metadata:
+      labels:
+        name: test # Pod template's label selector
+    spec:
+      #hostNetwork: true
+      containers:
+      - name: test-dp-container
+        image: nginx
+        resources:
+          limits:
+            example.com/deviceB: 1
+          requests:
+            example.com/deviceB: 1
