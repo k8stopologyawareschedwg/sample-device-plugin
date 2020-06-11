@@ -14,16 +14,14 @@ spec:
       hostNetwork: true
       containers:
       - name: device-plugin-b-container
-        image: quay.io/swsehgal/device-plugin-b:latest
+        image: quay.io/swsehgal/device-plugin:latest
+        env:
+        - name: DEVICE_RESOURCE_NAME
+          value: "example.com/deviceB"
         volumeMounts:
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
-        # - name: devdir
-        #   mountPath: /dev
       volumes:
       - name: kubeletsockets
         hostPath:
           path: /var/lib/kubelet/device-plugins
-      # - name: devdir
-      #   hostPath:
-      #     path: /dev
