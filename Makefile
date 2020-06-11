@@ -1,13 +1,16 @@
-COMMONENVVAR=GOOS=linux GOARCH=amd64
-BUILDENVVAR=CGO_ENABLED=0
+COMMONENVVAR = GOOS=linux GOARCH=amd64
+BUILDENVVAR = CGO_ENABLED=0
+RUNTIME ?= podman
+REPOOWNER ?= swsehgal
+IMAGENAME ?= device-plugin
+IMAGETAG ?= latest
 
 .PHONY: all
 all: build
 
 .PHONY: build
 build: gofmt
-	 $(COMMONENVVAR) $(BUILDENVVAR) go build -ldflags '-w' -o ./bin/devicepluginA ./cmd/devicepluginA
-	 $(COMMONENVVAR) $(BUILDENVVAR) go build -ldflags '-w' -o ./bin/devicepluginB ./cmd/devicepluginB
+	 $(COMMONENVVAR) $(BUILDENVVAR) go build -ldflags '-w' -o ./bin/deviceplugin ./cmd/deviceplugin
 
 .PHONY: gofmt
 gofmt:
@@ -22,25 +25,12 @@ govet:
 .PHONY: image
 image: build
 	@echo "building image"
-	docker build -f images/Dockerfile-dpA -t quay.io/swsehgal/device-plugin-a:latest .
-	docker build -f images/Dockerfile-dpB -t quay.io/swsehgal/device-plugin-b:latest .
+	$(RUNTIME) build -f images/Dockerfile -t quay.io/$(REPOOWNER)/$(IMAGENAME):$(IMAGETAG) .
 
 .PHONY: push
 push: image
 	@echo "pushing image"
-	docker push quay.io/swsehgal/device-plugin-a:latest
-	docker push quay.io/swsehgal/device-plugin-b:latest
-
-.PHONY: push-A
-push-A: image
-	@echo "pushing image device plugin A"
-	docker push quay.io/swsehgal/device-plugin-a:latest
-
-.PHONY: push-B
-push-B: build
-	@echo "pushing image device plugin B"
-	docker push quay.io/swsehgal/device-plugin-b:latest
-
+	$(RUNTIME) push quay.io/$(REPOOWNER)/$(IMAGENAME):$(IMAGETAG)
 
 .PHONY: deploy
 deploy:
@@ -55,7 +45,7 @@ test-both:
 
 .PHONY: deploy-A
 deploy-A:
-	@echo "Deploying device plugin B"
+	@echo "Deploying device plugin A"
 	kubectl create -f manifests/devicepluginA-ds.yaml
 
 .PHONY: test-A
@@ -72,8 +62,9 @@ deploy-B:
 test-B:
 	kubectl create -f manifests/test-deviceB.yaml
 
-clean:
-	rm -f ./bin/devicepluginA
-	rm -f ./bin/devicepluginB
+clean-binaries:
+	rm -f ./bin/deviceplugin
+
+clean: clean-binaries
 	kubectl delete -f manifests/devicepluginA-ds.yaml
 	kubectl delete -f manifests/devicepluginB-ds.yaml

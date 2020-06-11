@@ -14,20 +14,14 @@ spec:
       hostNetwork: true
       containers:
       - name: device-plugin-a-container
-        image: quay.io/swsehgal/device-plugin-a:latest
-        # command:
-        # - sleep
-        # args:
-        # - "1000000"
+        image: quay.io/swsehgal/device-plugin:latest
+        env:
+        - name: DEVICE_RESOURCE_NAME
+          value: "example.com/deviceA"
         volumeMounts:
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
-        # - name: devdir
-        #   mountPath: /dev
       volumes:
       - name: kubeletsockets
         hostPath:
           path: /var/lib/kubelet/device-plugins
-      # - name: devdir
-      #   hostPath:
-      #     path: /dev

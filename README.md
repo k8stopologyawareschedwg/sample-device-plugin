@@ -1,18 +1,25 @@
 # Sample Device Plugin
 
-This is a sample device plugin repository to enable support for sample devices in a kubernetes cluster using the device plugin API. The motivation for this was to emulated devices on a NUMA node basis in a kubernetes environment in case the environment does not have multi numa hardware or for testing purpose. This repo contains two device plugins to be deployed on a two node cluster (one master and one worker node). The devices emulated on various NUMA nodes on a two node cluster is explained in the diagram below:
+This is a sample device plugin repository to enable support for sample devices in a kubernetes cluster using the device plugin API.
+The motivation for this was to emulated devices on a NUMA node basis in a kubernetes environment in case the environment does not have multi numa hardware or for testing purpose.
+This repo contains a device plugin to be deployed on a multi-node cluster (at least one master and one worker node).
+The devices emulated on various NUMA nodes on a two node cluster is explained in the diagram below:
 
 ![Setup](numa-topology.png)
 
 ## Installation
 
-1. Update the image name and/or docker repository in the Makefile
+1. Use the following environment variables for any of the `make` invocations documented below:
+   - `RUNTIME`: select container runtime to use, podman or docker. Default is podman.
+   - `REPOOWNER`: owner of the repo (on `quay.io`) on which upload the images. *You need to change this!*
+   - `IMAGENAME`: name of the container image to be uploaded. Default is `device-plugin`.
+   - `IMAGETAG`: tag of to use for the container image. Default is `latest`.
 2. To deploy the device plugin run:
-
 ```bash
-make push
-make deploy
+REPOOWNER=myorg make push
+REPOOWNER=myorg make deploy
 ```
+
 The Makefile provides other targets:
 * build: Build the device plugin go code
 * gofmt: To format the code

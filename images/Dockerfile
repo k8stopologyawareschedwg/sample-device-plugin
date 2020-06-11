@@ -13,5 +13,9 @@
 # limitations under the License.
 
 FROM busybox
-ADD bin/devicepluginA /devicepluginA
-ENTRYPOINT ["/devicepluginA", "-alsologtostderr"]
+ADD bin/deviceplugin /bin/deviceplugin
+RUN mkdir -p /etc/devices
+ADD config/devices.json /etc/devices/config.json
+ADD config/device_A.json /etc/devices/example_com_deviceA.json
+ADD config/device_B.json /etc/devices/example_com_deviceB.json
+ENTRYPOINT ["/bin/deviceplugin", "--alsologtostderr", "-C", "/etc/devices"]
