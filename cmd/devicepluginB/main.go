@@ -40,7 +40,7 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 		response := &pluginapi.ContainerAllocateResponse{}
 		var env map[string]string
 		env = make(map[string]string)
-		var fpath, devName string
+		var fpath string
 		for _, requestID := range req.DevicesIDs {
 			dev, ok := devs[requestID]
 			if !ok {
@@ -51,11 +51,10 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 				return nil, fmt.Errorf("invalid allocation request with unhealthy device: %s", requestID)
 			}
 
-			devName = fmt.Sprintf("tty2%d", i)
-			fpath = fmt.Sprintf("/dev/%s", devName)
+			fpath = fmt.Sprintf("/dev/tty2%d", i)
 			i++
 
-			key := fmt.Sprintf("NUMANODE_%s_%s", dev.ID, devName)
+			key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, fpath)
 			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
 			klog.Infof("Creating environment variables key: %s:val %s", key, val)
 			env[key] = val

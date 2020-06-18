@@ -39,7 +39,7 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 	for _, req := range r.ContainerRequests {
 		response := &pluginapi.ContainerAllocateResponse{}
 		var env map[string]string
-		var fpath, devName string
+		var fpath string
 		env = make(map[string]string)
 		for _, requestID := range req.DevicesIDs {
 			dev, ok := devs[requestID]
@@ -52,10 +52,9 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 			}
 
 			// create fake device file
-			devName = fmt.Sprintf("tty1%d", i)
-			fpath = fmt.Sprintf("/dev/%s", devName)
+			fpath = fmt.Sprintf("/dev/tty1%d", i)
 			i++
-			key := fmt.Sprintf("NUMANODE_%s_%s", dev.ID, devName)
+			key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, fpath)
 			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
 			klog.Infof("Creating environment variables key: %s:val %s", key, val)
 			env[key] = val
