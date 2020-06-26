@@ -59,7 +59,7 @@ const (
 )
 
 // stubAllocFunc creates and returns allocation response for the input allocate request
-func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
+func stubAllocFunc(r *pluginapi.AllocateRequest, resourceName string, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
 	var responses pluginapi.AllocateResponse
 	i := 0
 	for _, req := range r.ContainerRequests {
@@ -81,7 +81,7 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 			devName = fmt.Sprintf("tty1%d", i)
 			fpath = fmt.Sprintf("/dev/%s", devName)
 			i++
-			key := fmt.Sprintf("NUMANODE_%s_%s", dev.ID, devName)
+			key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, devName)
 			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
 			klog.Infof("Creating environment variables key: %s:val %s", key, val)
 			env[key] = val
@@ -201,7 +201,11 @@ func main() {
 		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
 
 	}
-	dp1.SetAllocFunc(stubAllocFunc)
+	dp1.SetAllocFunc(
+		func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
+			return stubAllocFunc(r, resourceName, devs)
+		},
+	)
 	if err := dp1.Register(pluginapi.KubeletSocket, resourceName, pluginapi.DevicePluginPath); err != nil {
 		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
 	}
