@@ -46,7 +46,7 @@ deploy:
 .PHONY: e2e-test
 e2e-test:
 	@echo "Running E2E tests"
-	GOFLAGS=-mod=vendor ginkgo --v --keepGoing -r
+	GOFLAGS=-mod=mod ginkgo --v --keepGoing -r
 
 .PHONY: test-both
 test-both:

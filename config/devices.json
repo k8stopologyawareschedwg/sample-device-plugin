@@ -3,17 +3,17 @@
         "kind-kubetest-control-plane": [
             {
                 "id": "DevA1",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 0
             },
             {
                 "id": "DevA2",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 1
             },
             {
                 "id": "DevA3",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 1
             },
             {
@@ -36,17 +36,17 @@
         "*":    [
             {
                 "id": "DevA1",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 0
             },
             {
                 "id": "DevA2",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 0
             },
             {
                 "id": "DevA3",
-                    "healthy": true,
+                "healthy": true,
                 "numanode": 0
             },
             {
