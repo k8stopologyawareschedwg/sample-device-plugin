@@ -25,6 +25,11 @@ image: build
 	docker build -f images/Dockerfile-dpA -t quay.io/swsehgal/device-plugin-a:latest .
 	docker build -f images/Dockerfile-dpB -t quay.io/swsehgal/device-plugin-b:latest .
 
+.PHONY: unit-tests
+unit-tests:
+	@echo "running unit tests"
+	go test -v ./...
+
 .PHONY: push
 push: image
 	@echo "pushing image"

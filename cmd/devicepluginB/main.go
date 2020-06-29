@@ -21,6 +21,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/swatisehgal/sample-device-plugin/pkg/fakedevice"
 	"github.com/swatisehgal/sample-device-plugin/pkg/server"
 	"k8s.io/klog/v2"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -54,10 +55,9 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 			fpath = fmt.Sprintf("/dev/tty2%d", i)
 			i++
 
-			key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, fpath)
-			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
-			klog.Infof("Creating environment variables key: %s:val %s", key, val)
-			env[key] = val
+			for key, val := range fakedevice.MakeEnv(resourceName, fpath, dev) {
+				env[key] = val
+			}
 
 			response.Devices = append(response.Devices, &pluginapi.DeviceSpec{
 				ContainerPath: fpath,
