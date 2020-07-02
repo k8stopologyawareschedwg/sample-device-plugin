@@ -38,6 +38,16 @@ deploy:
 	kubectl create -f manifests/devicepluginA-ds.yaml
 	kubectl create -f manifests/devicepluginB-ds.yaml
 
+.PHONY: undeploy
+	@echo "Removing device plugins"
+	kubectl delete -f manifests/devicepluginA-ds.yaml
+	kubectl delete -f manifests/devicepluginB-ds.yaml
+
+.PHONY: e2e-test
+e2e-test:
+	@echo "Running E2E tests"
+	GOFLAGS=-mod=vendor ginkgo --v --keepGoing -r
+
 .PHONY: test-both
 test-both:
 	kubectl create -f manifests/test-both-success.yaml

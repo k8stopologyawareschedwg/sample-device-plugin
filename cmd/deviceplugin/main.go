@@ -65,7 +65,7 @@ type stubInfo struct {
 }
 
 // stubAllocFunc creates and returns allocation response for the input allocate request
-func stubAllocFunc(r *pluginapi.AllocateRequest, sInfo *stubInfo, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
+func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
 	var responses pluginapi.AllocateResponse
 	for _, req := range r.ContainerRequests {
 		response := &pluginapi.ContainerAllocateResponse{}
@@ -136,7 +136,7 @@ func configFilePath(configDirPath, resourceName string) string {
 
 func main() {
 	configDirPath := ""
-	var sInfo stubInfo
+	sInfo := &stubInfo{}
 
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
@@ -211,11 +211,7 @@ func main() {
 		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
 
 	}
-	dp1.SetAllocFunc(
-		func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
-			return stubAllocFunc(r, &sInfo, devs)
-		},
-	)
+	dp1.SetAllocFunc(sInfo.stubAllocFunc)
 	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.resourceName, pluginapi.DevicePluginPath); err != nil {
 		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
 	}
