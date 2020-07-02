@@ -35,6 +35,9 @@ import (
 
 const (
 	EnvVarResourceName = "DEVICE_RESOURCE_NAME"
+	DefaultDeviceName  = "tty0"
+
+	socketDir = "/var/lib/kubelet/device-plugins"
 )
 
 type deviceConfig struct {
@@ -51,17 +54,19 @@ func (dc deviceConfig) ToHealthy() string {
 }
 
 type pluginConfig struct {
-	Devices map[string][]deviceConfig `json:"devices"`
+	DeviceName string                    `json:"devicename"`
+	Devices    map[string][]deviceConfig `json:"devices"`
 }
 
-const (
-	socketDir = "/var/lib/kubelet/device-plugins"
-)
+type stubInfo struct {
+	resourceName string
+	deviceName   string
+	deviceCount  int
+}
 
 // stubAllocFunc creates and returns allocation response for the input allocate request
-func stubAllocFunc(r *pluginapi.AllocateRequest, resourceName string, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
+func stubAllocFunc(r *pluginapi.AllocateRequest, sInfo *stubInfo, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
 	var responses pluginapi.AllocateResponse
-	i := 0
 	for _, req := range r.ContainerRequests {
 		response := &pluginapi.ContainerAllocateResponse{}
 		var env map[string]string
@@ -78,10 +83,10 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, resourceName string, devs map[s
 			}
 
 			// create fake device file
-			devName = fmt.Sprintf("tty1%d", i)
+			devName = fmt.Sprintf("%s%d", sInfo.deviceName, sInfo.deviceCount)
 			fpath = fmt.Sprintf("/dev/%s", devName)
-			i++
-			key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, devName)
+			sInfo.deviceCount++
+			key := fmt.Sprintf("%s_%s_%s", sInfo.resourceName, dev.ID, devName)
 			val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
 			klog.Infof("Creating environment variables key: %s:val %s", key, val)
 			env[key] = val
@@ -113,6 +118,9 @@ func readConfig(path string) (*pluginConfig, error) {
 		return nil, err
 	}
 
+	if conf.DeviceName == "" {
+		conf.DeviceName = DefaultDeviceName
+	}
 	return &conf, nil
 }
 
@@ -128,12 +136,12 @@ func configFilePath(configDirPath, resourceName string) string {
 
 func main() {
 	configDirPath := ""
-	resourceName := ""
+	var sInfo stubInfo
 
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
-	pflag.StringVarP(&resourceName, "resource", "r", "", "device plugin resource name")
+	pflag.StringVarP(&sInfo.resourceName, "resource", "r", "", "device plugin resource name")
 	pflag.Parse()
 
 	if configDirPath == "" {
@@ -141,11 +149,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	if resourceName == "" {
-		resourceName = os.Getenv(EnvVarResourceName)
-		klog.Infof("Resource name configured from environ: %q", resourceName)
+	if sInfo.resourceName == "" {
+		sInfo.resourceName = os.Getenv(EnvVarResourceName)
+		klog.Infof("Resource name configured from environ: %q", sInfo.resourceName)
 	}
-	if resourceName == "" {
+	if sInfo.resourceName == "" {
 		klog.Infof("No resource name configured - nothing to do")
 		os.Exit(0)
 	}
@@ -155,13 +163,14 @@ func main() {
 		klog.Fatalf("Unable to get the hostname, Error: %v", err)
 	}
 
-	fullPath := configFilePath(configDirPath, resourceName)
+	fullPath := configFilePath(configDirPath, sInfo.resourceName)
 	klog.Infof("configuration file path is %q", fullPath)
 	conf, err := readConfig(fullPath)
 	if err != nil {
 		klog.Fatalf("Unable to read the config, Error: %v", err)
 	}
 
+	sInfo.deviceName = conf.DeviceName
 	devsConf := conf.Devices[hostname]
 	if len(devsConf) == 0 {
 		devsConf = conf.Devices["*"]
@@ -171,6 +180,7 @@ func main() {
 		os.Exit(0)
 	}
 
+	klog.Infof("Resource: %q -> device base name: %q", sInfo.resourceName, sInfo.deviceName)
 	klog.V(4).Infof("Devices config: %s", spew.Sdump(devsConf))
 
 	var devs []*pluginapi.Device
@@ -187,7 +197,7 @@ func main() {
 	}
 
 	if len(devs) == 0 {
-		klog.Infof("No devices enabled for resource %q - nothing to do", resourceName)
+		klog.Infof("No devices enabled for resource %q - nothing to do", sInfo.resourceName)
 		os.Exit(0)
 	}
 
@@ -196,17 +206,17 @@ func main() {
 
 	socketPath := socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
 
-	dp1 := server.NewDevicePlugin(devs, socketPath, resourceName, false)
+	dp1 := server.NewDevicePlugin(devs, socketPath, sInfo.resourceName, false)
 	if err := dp1.Start(); err != nil {
 		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
 
 	}
 	dp1.SetAllocFunc(
 		func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
-			return stubAllocFunc(r, resourceName, devs)
+			return stubAllocFunc(r, &sInfo, devs)
 		},
 	)
-	if err := dp1.Register(pluginapi.KubeletSocket, resourceName, pluginapi.DevicePluginPath); err != nil {
+	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.resourceName, pluginapi.DevicePluginPath); err != nil {
 		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
 	}
 	select {}

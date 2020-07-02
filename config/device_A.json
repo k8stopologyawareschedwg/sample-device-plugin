@@ -1,4 +1,5 @@
 {
+    "devicename": "tty1",
     "devices": {
         "kind-kubetest-control-plane": [
             {
