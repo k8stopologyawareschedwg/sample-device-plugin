@@ -12,11 +12,12 @@ import (
 )
 
 const (
-	resourceName = "io.openshift/fakedev"
+	resourceName   = "io.openshift/fakedev"
+	resourcePrefix = "IOOPENSHIFTFAKEDEV"
 )
 
 var _ = Describe("FakeDevice", func() {
-	Describe("creating envifonment variable", func() {
+	Describe("creating environment variable", func() {
 		It("should have all caps name", func() {
 			dev := pluginapi.Device{
 				ID:       "test00",
@@ -57,5 +58,17 @@ var _ = Describe("FakeDevice", func() {
 			}
 		})
 
+		It("should have Resource Name prefix", func() {
+			dev := pluginapi.Device{
+				ID:       "test03",
+				Health:   pluginapi.Healthy,
+				Topology: &pluginapi.TopologyInfo{Nodes: []*pluginapi.NUMANode{{ID: 0}}},
+			}
+			env := fakedevice.MakeEnv(resourceName, "/dev/fake3", dev)
+			Expect(env).To(Not(BeNil()))
+			for key := range env {
+				Expect(key).To(HavePrefix(resourcePrefix))
+			}
+		})
 	})
 })

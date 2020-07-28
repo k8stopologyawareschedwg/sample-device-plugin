@@ -9,7 +9,7 @@ import (
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 
-// MakeEnv creates the environment variable needed by the given device
+// MakeEnv creates the environment variable in the format: <resource-prefix>_<device-id>_<device-file>=<numanode-id>
 func MakeEnv(resourceName, fpath string, dev pluginapi.Device) map[string]string {
 	env := make(map[string]string)
 

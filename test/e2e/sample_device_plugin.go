@@ -53,9 +53,25 @@ var _ = Describe("sample device plugin", func() {
 
 			err = WaitForPodCondition(testpod, corev1.PodReady, corev1.ConditionTrue, 10*time.Minute)
 			Expect(err).ToNot(HaveOccurred())
-
 			devicesMatchCount := 0
 			for _, devReq := range devReqs {
+
+				envVars, err := ExecCommandOnPod(testpod, []string{"env"})
+				Expect(err).ToNot(HaveOccurred())
+				for _, envVar := range strings.Split(string(envVars), "\n") {
+					env := strings.TrimSpace(envVar)
+					devName := strings.Map(func(r rune) rune {
+						if r == '.' || r == '/' {
+							return -1
+						}
+						return r
+					}, devReq.Name)
+					if len(env) == 0 || !strings.HasPrefix(env, devName) {
+						continue
+					}
+					Expect(env).To(HavePrefix(strings.ToUpper(devName)))
+				}
+
 				data, err := ExecCommandOnPod(testpod, []string{"/bin/sh", "-c", fmt.Sprintf("/bin/stat -c %%F %s", devReq.DeviceName)})
 				Expect(err).ToNot(HaveOccurred())
 				for _, devDesc := range strings.Split(string(data), "\n") {
