@@ -1,6 +1,6 @@
 {
     "devices": {
-        "kind-kubetest-control-plane": [
+        "kind-control-plane": [
             {
                 "id": "DevA1",
                 "healthy": true,

@@ -1,11 +1,11 @@
 {
-    "devicename": "tty2",
+    "devicename": "tty1",
     "devices": {
-        "kind-kubetest-control-plane": [
+        "kind-control-plane": [
             {
                 "id": "DevB1",
                 "healthy": true,
-                "numanode": 0
+                "numanode": 1
             },
             {
                 "id": "DevB2",
@@ -16,6 +16,11 @@
                 "id": "DevB3",
                 "healthy": true,
                 "numanode": 1
+            },
+            {
+                "id": "DevB4",
+                "healthy": true,
+                "numanode": 0
             }
         ],
         "*":    [
@@ -31,6 +36,11 @@
             },
             {
                 "id": "DevB3",
+                "healthy": true,
+                "numanode": 1
+            },
+            {
+                "id": "DevB4",
                 "healthy": true,
                 "numanode": 1
             }

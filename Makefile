@@ -1,6 +1,6 @@
 COMMONENVVAR = GOOS=linux GOARCH=amd64
 BUILDENVVAR = CGO_ENABLED=0
-RUNTIME ?= podman
+RUNTIME ?= docker 
 REPOOWNER ?= swsehgal
 IMAGENAME ?= device-plugin
 IMAGETAG ?= latest
