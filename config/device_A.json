@@ -5,22 +5,17 @@
             {
                 "id": "DevA1",
                 "healthy": true,
-                "numanode": 1
+                "numanode": 0
             },
             {
                 "id": "DevA2",
                 "healthy": true,
-                "numanode": 0
+                "numanode": 1
             },
             {
                 "id": "DevA3",
                 "healthy": true,
                 "numanode": 1
-            },
-            {
-                "id": "DevA4",
-                "healthy": true,
-                "numanode": 0
             }
         ],
         "*":    [
@@ -36,11 +31,6 @@
             },
             {
                 "id": "DevA3",
-                "healthy": true,
-                "numanode": 0
-            },
-            {
-                "id": "DevA4",
                 "healthy": true,
                 "numanode": 0
             }

@@ -1,11 +1,11 @@
 {
-    "devicename": "tty1",
+    "devicename": "tty2",
     "devices": {
         "kind-control-plane": [
             {
                 "id": "DevB1",
                 "healthy": true,
-                "numanode": 1
+                "numanode": 0
             },
             {
                 "id": "DevB2",
@@ -16,11 +16,6 @@
                 "id": "DevB3",
                 "healthy": true,
                 "numanode": 1
-            },
-            {
-                "id": "DevB4",
-                "healthy": true,
-                "numanode": 0
             }
         ],
         "*":    [
@@ -36,11 +31,6 @@
             },
             {
                 "id": "DevB3",
-                "healthy": true,
-                "numanode": 1
-            },
-            {
-                "id": "DevB4",
                 "healthy": true,
                 "numanode": 1
             }
