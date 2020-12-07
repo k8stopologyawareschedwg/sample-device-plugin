@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/swatisehgal/sample-device-plugin/pkg/fakedevice"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
 )
 
 const (

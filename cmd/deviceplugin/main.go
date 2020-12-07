@@ -28,8 +28,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/pflag"
 
-	"github.com/swatisehgal/sample-device-plugin/pkg/fakedevice"
-	"github.com/swatisehgal/sample-device-plugin/pkg/server"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/server"
 	"k8s.io/klog/v2"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )

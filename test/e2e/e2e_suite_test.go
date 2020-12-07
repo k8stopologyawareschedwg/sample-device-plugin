@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	e2etest "github.com/swatisehgal/sample-device-plugin/test/e2e"
+	e2etest "github.com/k8stopologyawareschedwg/sample-device-plugin/test/e2e"
 )
 
 var _ = BeforeSuite(func() {

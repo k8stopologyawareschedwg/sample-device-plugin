@@ -1,4 +1,4 @@
-module github.com/swatisehgal/sample-device-plugin
+module github.com/k8stopologyawareschedwg/sample-device-plugin
 
 go 1.13
 
