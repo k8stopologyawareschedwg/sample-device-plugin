@@ -184,15 +184,20 @@ func main() {
 
 	var devs []*pluginapi.Device
 	for _, devConf := range devsConf {
-		devs = append(devs, &pluginapi.Device{
-			ID:     devConf.ID,
-			Health: devConf.ToHealthy(),
-			Topology: &pluginapi.TopologyInfo{
+		var topo *pluginapi.TopologyInfo
+		if devConf.NUMANode != -1 {
+			topo = &pluginapi.TopologyInfo{
 				Nodes: []*pluginapi.NUMANode{
 					{ID: int64(devConf.NUMANode)},
 				},
-			},
-		})
+			}
+		}
+		dev := &pluginapi.Device{
+			ID:       devConf.ID,
+			Health:   devConf.ToHealthy(),
+			Topology: topo,
+		}
+		devs = append(devs, dev)
 	}
 
 	if len(devs) == 0 {

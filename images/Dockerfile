@@ -18,4 +18,5 @@ RUN mkdir -p /etc/devices
 ADD config/devices.json /etc/devices/config.json
 ADD config/device_A.json /etc/devices/example_com_deviceA.json
 ADD config/device_B.json /etc/devices/example_com_deviceB.json
+ADD config/device_C.json /etc/devices/example_com_deviceC.json
 ENTRYPOINT ["/bin/deviceplugin", "--alsologtostderr", "-C", "/etc/devices"]
