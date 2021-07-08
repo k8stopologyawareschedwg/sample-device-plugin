@@ -22,7 +22,10 @@ func MakeEnv(resourceName, fpath string, dev pluginapi.Device) map[string]string
 	}, key)
 	key = strings.ToUpper(key)
 
-	val := fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
+	val := "-1"
+	if dev.Topology != nil && len(dev.Topology.Nodes) != 0 {
+		val = fmt.Sprintf("%d", dev.Topology.Nodes[0].ID)
+	}
 	klog.Infof("Creating environment variables key=%q val=%q", key, val)
 	env[key] = val
 

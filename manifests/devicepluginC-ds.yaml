@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: device-plugin-b-ds
+  name: device-plugin-c-ds
 spec:
   selector:
       matchLabels:
-        name: device-plugin-b
+        name: device-plugin-c
   template:
     metadata:
       labels:
-        name: device-plugin-b
+        name: device-plugin-c
     spec:
       hostNetwork: true
       containers:
-      - name: device-plugin-b-container
+      - name: device-plugin-a-container
         image: quay.io/k8stopologyawareschedwg/device-plugin:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: DEVICE_RESOURCE_NAME
-          value: "example.com/deviceB"
+          value: "example.com/deviceC"
         volumeMounts:
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
