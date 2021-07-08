@@ -1,7 +1,7 @@
 COMMONENVVAR = GOOS=linux GOARCH=amd64
 BUILDENVVAR = CGO_ENABLED=0
 RUNTIME ?= podman
-REPOOWNER ?= swsehgal
+REPOOWNER ?= k8stopologyawareschedwg
 IMAGENAME ?= device-plugin
 IMAGETAG ?= latest
 

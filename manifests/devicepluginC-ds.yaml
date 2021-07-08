@@ -14,7 +14,7 @@ spec:
       hostNetwork: true
       containers:
       - name: device-plugin-a-container
-        image: quay.io/aperevalov/device-plugin:latest
+        image: quay.io/k8stopologyawareschedwg/device-plugin:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: DEVICE_RESOURCE_NAME
