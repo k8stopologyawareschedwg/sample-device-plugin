@@ -8,6 +8,7 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/grpc v1.29.1
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 	k8s.io/api v0.18.3
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v0.18.3
