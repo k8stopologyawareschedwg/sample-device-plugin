@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +27,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/pflag"
+	"gopkg.in/yaml.v2"
 
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/server"
@@ -42,9 +43,9 @@ const (
 )
 
 type deviceConfig struct {
-	ID       string `json:"id"`
-	Healthy  bool   `json:"healthy"`
-	NUMANode int    `json:"numanode"`
+	ID       string `yaml:"id"`
+	Healthy  bool   `yaml:"healthy"`
+	NUMANode int    `yaml:"numanode"`
 }
 
 func (dc deviceConfig) ToHealthy() string {
@@ -55,8 +56,8 @@ func (dc deviceConfig) ToHealthy() string {
 }
 
 type pluginConfig struct {
-	DeviceName string                    `json:"devicename"`
-	Devices    map[string][]deviceConfig `json:"devices"`
+	DeviceName string                    `yaml:"devicename"`
+	Devices    map[string][]deviceConfig `yaml:"devices"`
 }
 
 type stubInfo struct {
@@ -104,21 +105,20 @@ func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[stri
 }
 
 func readConfig(path string) (*pluginConfig, error) {
-	src, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer src.Close()
-
-	dec := json.NewDecoder(src)
 	var conf pluginConfig
-	err = dec.Decode(&conf)
-	if err != nil {
-		return nil, err
-	}
 
 	if conf.DeviceName == "" {
 		conf.DeviceName = DefaultDeviceName
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(b, &conf)
+	if err != nil {
+		return nil, err
 	}
 	return &conf, nil
 }
