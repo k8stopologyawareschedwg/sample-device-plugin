@@ -22,7 +22,12 @@ spec:
         volumeMounts:
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
+        - name: device-a-config-vol
+          mountPath: /etc/devices
       volumes:
       - name: kubeletsockets
         hostPath:
           path: /var/lib/kubelet/device-plugins
+      - configMap:
+          name: device-a-configmap
+        name: device-a-config-vol

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: device-b-configmap
+data:
+  example_com_deviceB.yaml: |
+      devicename: tty2
+      devices:
+        kind-control-plane:
+          - id: DevB1
+            healthy: true
+            numanode: 0
+          - id: DevB2
+            healthy: true
+            numanode: 0
+          - id: DevB3
+            healthy: true
+            numanode: 1
+        '*':
+          - id: DevB1
+            healthy: true
+            numanode: 1
+          - id: DevB2
+            healthy: true
+            numanode: 1
+          - id: DevB3
+            healthy: true
+            numanode: 1

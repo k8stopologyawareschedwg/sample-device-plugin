@@ -124,7 +124,7 @@ func readConfig(path string) (*pluginConfig, error) {
 }
 
 func configFilePath(configDirPath, resourceName string) string {
-	configFileName := fmt.Sprintf("%s.json", strings.Map(func(r rune) rune {
+	configFileName := fmt.Sprintf("%s.yaml", strings.Map(func(r rune) rune {
 		if r == '.' || r == '/' {
 			return '_'
 		}

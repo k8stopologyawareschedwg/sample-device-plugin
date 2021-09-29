@@ -14,9 +14,4 @@
 
 FROM busybox
 ADD bin/deviceplugin /bin/deviceplugin
-RUN mkdir -p /etc/devices
-ADD config/devices.yaml /etc/devices/config.yaml
-ADD config/device_A.yaml /etc/devices/example_com_deviceA.yaml
-ADD config/device_B.yaml /etc/devices/example_com_deviceB.yaml
-ADD config/device_C.yaml /etc/devices/example_com_deviceC.yaml
 ENTRYPOINT ["/bin/deviceplugin", "--alsologtostderr", "-C", "/etc/devices"]

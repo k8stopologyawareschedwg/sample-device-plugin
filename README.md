@@ -14,7 +14,12 @@ The devices emulated on various NUMA nodes on a two node cluster is explained in
    - `REPOOWNER`: owner of the repo (on `quay.io`) on which upload the images. *You need to change this!*
    - `IMAGENAME`: name of the container image to be uploaded. Default is `device-plugin`.
    - `IMAGETAG`: tag of to use for the container image. Default is `latest`.
-2. To deploy the device plugin run:
+2. Create configmaps:
+```bash
+kubectl create -f config/device-A-configmap.yaml
+kubectl create -f config/device-B-configmap.yaml
+```
+3. To deploy the device plugin run:
 ```bash
 REPOOWNER=myorg make push
 REPOOWNER=myorg make deploy
