@@ -44,6 +44,7 @@ deploy:
 	kubectl create -f manifests/devicepluginB-ds.yaml
 
 .PHONY: undeploy
+undeploy:
 	@echo "Removing device plugins"
 	kubectl delete -f manifests/devicepluginA-ds.yaml
 	kubectl delete -f manifests/devicepluginB-ds.yaml
