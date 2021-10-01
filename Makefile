@@ -30,7 +30,7 @@ image: build
 .PHONY: unit-tests
 unit-tests:
 	@echo "running unit tests"
-	go test -v ./...
+	go test -v ./cmd/... ./pkg/...
 
 .PHONY: push
 push: image
