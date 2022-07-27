@@ -51,4 +51,4 @@ jobs:
 
     - name: publish image
       run: |
-        docker push quay.io/${{ env.REPOOWNER }}/${{ env.IMAGENAME }}:${{ env.IMAGETAG }}
+        docker push quay.io/${{ env.REPOOWNER }}/${{ env.IMAGENAME }}:${{ env.RELEASE_VERSION }}
