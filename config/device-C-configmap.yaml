@@ -6,7 +6,6 @@ metadata:
     app: sample-device-plugin
 data:
   example_com_deviceC.yaml: |
-      devicename: tty1
       devices:
         kind-control-plane:
           - id: DevA1

@@ -2,7 +2,6 @@ package fakedevice
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -10,10 +9,10 @@ import (
 )
 
 // MakeEnv creates the environment variable in the format: <resource-prefix>_<device-id>_<device-file>=<numanode-id>
-func MakeEnv(resourceName, fpath string, dev pluginapi.Device) map[string]string {
+func MakeEnv(resourceName string, dev pluginapi.Device) map[string]string {
 	env := make(map[string]string)
 
-	key := fmt.Sprintf("%s_%s_%s", resourceName, dev.ID, filepath.Base(fpath))
+	key := fmt.Sprintf("%s_%s", resourceName, dev.ID)
 	key = strings.Map(func(r rune) rune {
 		if r == '.' || r == '/' {
 			return -1
