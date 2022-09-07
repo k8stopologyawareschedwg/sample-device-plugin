@@ -21,7 +21,7 @@ gofmt:
 .PHONY: govet
 govet:
 	@echo "Running go vet"
-	go vet
+	go vet ./cmd/... ./pkg/...
 
 outdir:
 	@mkdir -p _out || :
