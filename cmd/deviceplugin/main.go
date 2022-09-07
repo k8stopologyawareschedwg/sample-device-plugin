@@ -29,10 +29,12 @@ import (
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 
-	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
-	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/server"
 	"k8s.io/klog/v2"
+
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
+	dm "k8s.io/kubernetes/pkg/kubelet/cm/devicemanager"
+
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
 )
 
 const (
@@ -210,7 +212,7 @@ func main() {
 
 	socketPath := socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
 
-	dp1 := server.NewDevicePlugin(devs, socketPath, sInfo.resourceName, false)
+	dp1 := dm.NewDevicePluginStub(devs, socketPath, sInfo.resourceName, false, false)
 	if err := dp1.Start(); err != nil {
 		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
 
