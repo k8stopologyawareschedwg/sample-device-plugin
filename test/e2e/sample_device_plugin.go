@@ -14,10 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const (
+	DefaultDevicePath = "/dev/null"
+)
+
 type deviceRequest struct {
-	Name       string
-	Amount     int64
-	DeviceName string
+	Name   string
+	Amount int64
 }
 
 var _ = Describe("sample device plugin", func() {
@@ -72,7 +75,7 @@ var _ = Describe("sample device plugin", func() {
 					Expect(env).To(HavePrefix(strings.ToUpper(devName)))
 				}
 
-				data, err := ExecCommandOnPod(testpod, []string{"/bin/sh", "-c", fmt.Sprintf("/bin/stat -c %%F %s", devReq.DeviceName)})
+				data, err := ExecCommandOnPod(testpod, []string{"/bin/sh", "-c", fmt.Sprintf("/bin/stat -c %%F %s", DefaultDevicePath)})
 				Expect(err).ToNot(HaveOccurred())
 				for _, devDesc := range strings.Split(string(data), "\n") {
 					line := strings.TrimSpace(devDesc)
@@ -87,16 +90,14 @@ var _ = Describe("sample device plugin", func() {
 		},
 			table.Entry("a single device A", []deviceRequest{
 				{
-					Name:       "example.com/deviceA",
-					Amount:     1,
-					DeviceName: "/dev/tty1?",
+					Name:   "example.com/deviceA",
+					Amount: 1,
 				},
 			}),
 			table.Entry("a single device B", []deviceRequest{
 				{
-					Name:       "example.com/deviceB",
-					Amount:     1,
-					DeviceName: "/dev/tty2?",
+					Name:   "example.com/deviceB",
+					Amount: 1,
 				},
 			}),
 		)
