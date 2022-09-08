@@ -24,7 +24,7 @@ var _ = Describe("FakeDevice", func() {
 				Health:   pluginapi.Healthy,
 				Topology: &pluginapi.TopologyInfo{Nodes: []*pluginapi.NUMANode{{ID: 0}}},
 			}
-			env := fakedevice.MakeEnv(resourceName, "/dev/fake0", dev)
+			env := fakedevice.MakeEnv(resourceName, dev)
 			Expect(env).To(Not(BeNil()))
 			for key := range env {
 				keyUpper := strings.ToUpper(key)
@@ -38,7 +38,7 @@ var _ = Describe("FakeDevice", func() {
 				Health:   pluginapi.Healthy,
 				Topology: &pluginapi.TopologyInfo{Nodes: []*pluginapi.NUMANode{{ID: 0}}},
 			}
-			env := fakedevice.MakeEnv(resourceName, "/dev/fake1", dev)
+			env := fakedevice.MakeEnv(resourceName, dev)
 			Expect(env).To(Not(BeNil()))
 			for key := range env {
 				Expect(key).To(Not(ContainSubstring("/")))
@@ -51,7 +51,7 @@ var _ = Describe("FakeDevice", func() {
 				Health:   pluginapi.Healthy,
 				Topology: &pluginapi.TopologyInfo{Nodes: []*pluginapi.NUMANode{{ID: 0}}},
 			}
-			env := fakedevice.MakeEnv(resourceName, "/dev/fake2", dev)
+			env := fakedevice.MakeEnv(resourceName, dev)
 			Expect(env).To(Not(BeNil()))
 			for key := range env {
 				Expect(key).To(Not(ContainSubstring(".")))
@@ -64,7 +64,7 @@ var _ = Describe("FakeDevice", func() {
 				Health:   pluginapi.Healthy,
 				Topology: &pluginapi.TopologyInfo{Nodes: []*pluginapi.NUMANode{{ID: 0}}},
 			}
-			env := fakedevice.MakeEnv(resourceName, "/dev/fake3", dev)
+			env := fakedevice.MakeEnv(resourceName, dev)
 			Expect(env).To(Not(BeNil()))
 			for key := range env {
 				Expect(key).To(HavePrefix(resourcePrefix))

@@ -39,7 +39,7 @@ import (
 
 const (
 	EnvVarResourceName = "DEVICE_RESOURCE_NAME"
-	DefaultDeviceName  = "tty0"
+	DefaultDevicePath  = "/dev/null"
 
 	socketDir = "/var/lib/kubelet/device-plugins"
 )
@@ -58,14 +58,11 @@ func (dc deviceConfig) ToHealthy() string {
 }
 
 type pluginConfig struct {
-	DeviceName string                    `yaml:"devicename"`
-	Devices    map[string][]deviceConfig `yaml:"devices"`
+	Devices map[string][]deviceConfig `yaml:"devices"`
 }
 
 type stubInfo struct {
 	resourceName string
-	deviceName   string
-	deviceCount  int
 }
 
 // stubAllocFunc creates and returns allocation response for the input allocate request
@@ -73,8 +70,8 @@ func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[stri
 	var responses pluginapi.AllocateResponse
 	for _, req := range r.ContainerRequests {
 		response := &pluginapi.ContainerAllocateResponse{}
-		var env map[string]string
-		env = make(map[string]string)
+		env := make(map[string]string)
+
 		for _, requestID := range req.DevicesIDs {
 			dev, ok := devs[requestID]
 			if !ok {
@@ -85,17 +82,13 @@ func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[stri
 				return nil, fmt.Errorf("invalid allocation request with unhealthy device: %s", requestID)
 			}
 
-			// create fake device file
-			fpath := fmt.Sprintf("/dev/%s%d", sInfo.deviceName, sInfo.deviceCount)
-			sInfo.deviceCount++
-
-			for key, val := range fakedevice.MakeEnv(sInfo.resourceName, fpath, dev) {
+			for key, val := range fakedevice.MakeEnv(sInfo.resourceName, dev) {
 				env[key] = val
 			}
 
 			response.Devices = append(response.Devices, &pluginapi.DeviceSpec{
-				ContainerPath: fpath,
-				HostPath:      fpath,
+				ContainerPath: DefaultDevicePath,
+				HostPath:      DefaultDevicePath,
 				Permissions:   "rw",
 			})
 		}
@@ -108,10 +101,6 @@ func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[stri
 
 func readConfig(path string) (*pluginConfig, error) {
 	var conf pluginConfig
-
-	if conf.DeviceName == "" {
-		conf.DeviceName = DefaultDeviceName
-	}
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -171,7 +160,6 @@ func main() {
 		klog.Fatalf("Unable to read the config, Error: %v", err)
 	}
 
-	sInfo.deviceName = conf.DeviceName
 	devsConf := conf.Devices[hostname]
 	if len(devsConf) == 0 {
 		devsConf = conf.Devices["*"]
@@ -181,7 +169,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	klog.Infof("Resource: %q -> device base name: %q", sInfo.resourceName, sInfo.deviceName)
 	klog.V(4).Infof("Devices config: %s", spew.Sdump(devsConf))
 
 	var devs []*pluginapi.Device
