@@ -2,8 +2,9 @@ COMMONENVVAR = GOOS=linux GOARCH=amd64
 BUILDENVVAR = CGO_ENABLED=0
 RUNTIME ?= podman
 REPOOWNER ?= k8stopologyawareschedwg
-IMAGENAME ?= device-plugin
+IMAGENAME ?= sample-device-plugin
 IMAGETAG ?= latest
+SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE ?= quay.io/${REPOOWNER}/${IMAGENAME}/${IMAGETAG}
 
 .PHONY: all
 all: build
@@ -22,10 +23,13 @@ govet:
 	@echo "Running go vet"
 	go vet
 
+outdir:
+	@mkdir -p _out || :
+
 .PHONY: image
 image: build
 	@echo "building image"
-	$(RUNTIME) build -f images/Dockerfile -t quay.io/$(REPOOWNER)/$(IMAGENAME):$(IMAGETAG) .
+	$(RUNTIME) build -f images/Dockerfile -t $(SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE) .
 
 .PHONY: unit-tests
 unit-tests:
@@ -35,7 +39,7 @@ unit-tests:
 .PHONY: push
 push: image
 	@echo "pushing image"
-	$(RUNTIME) push quay.io/$(REPOOWNER)/$(IMAGENAME):$(IMAGETAG)
+	$(RUNTIME) push $(SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE)
 
 .PHONY: deploy
 deploy:
@@ -49,10 +53,15 @@ undeploy:
 	kubectl delete -f manifests/devicepluginA-ds.yaml
 	kubectl delete -f manifests/devicepluginB-ds.yaml
 
+.PHONY: build-e2e
+build-e2e: outdir
+	@echo "Building E2E tests"
+	go test -v -c -o _out/device-plugin-e2e.test ./test/e2e/...
+
 .PHONY: e2e-test
-e2e-test:
+e2e-test: build-e2e
 	@echo "Running E2E tests"
-	GOFLAGS=-mod=mod ginkgo --v --keepGoing -r
+	_out/device-plugin-e2e.test -ginkgo.v
 
 .PHONY: test-both
 test-both:
