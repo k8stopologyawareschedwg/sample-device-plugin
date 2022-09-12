@@ -14,4 +14,4 @@
 
 FROM busybox
 ADD bin/deviceplugin /bin/deviceplugin
-ENTRYPOINT ["/bin/deviceplugin", "--alsologtostderr", "-C", "/etc/devices"]
+ENTRYPOINT ["/bin/deviceplugin"]
