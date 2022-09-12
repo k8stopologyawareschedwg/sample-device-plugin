@@ -19,16 +19,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/pflag"
-	"gopkg.in/yaml.v2"
-
 	"k8s.io/klog/v2"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -43,23 +39,6 @@ const (
 
 	socketDir = "/var/lib/kubelet/device-plugins"
 )
-
-type deviceConfig struct {
-	ID       string `yaml:"id"`
-	Healthy  bool   `yaml:"healthy"`
-	NUMANode int    `yaml:"numanode"`
-}
-
-func (dc deviceConfig) ToHealthy() string {
-	if dc.Healthy {
-		return pluginapi.Healthy
-	}
-	return pluginapi.Unhealthy
-}
-
-type pluginConfig struct {
-	Devices map[string][]deviceConfig `yaml:"devices"`
-}
 
 type stubInfo struct {
 	resourceName string
@@ -99,31 +78,6 @@ func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[stri
 	return &responses, nil
 }
 
-func readConfig(path string) (*pluginConfig, error) {
-	var conf pluginConfig
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(b, &conf)
-	if err != nil {
-		return nil, err
-	}
-	return &conf, nil
-}
-
-func configFilePath(configDirPath, resourceName string) string {
-	configFileName := fmt.Sprintf("%s.yaml", strings.Map(func(r rune) rune {
-		if r == '.' || r == '/' {
-			return '_'
-		}
-		return r
-	}, resourceName))
-	return filepath.Join(configDirPath, configFileName)
-}
-
 func main() {
 	configDirPath := ""
 	sInfo := &stubInfo{}
@@ -133,11 +87,6 @@ func main() {
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
 	pflag.StringVarP(&sInfo.resourceName, "resource", "r", "", "device plugin resource name")
 	pflag.Parse()
-
-	if configDirPath == "" {
-		klog.Infof("No config provided - nothing to do")
-		os.Exit(0)
-	}
 
 	if sInfo.resourceName == "" {
 		sInfo.resourceName = os.Getenv(EnvVarResourceName)
@@ -153,11 +102,9 @@ func main() {
 		klog.Fatalf("Unable to get the hostname, Error: %v", err)
 	}
 
-	fullPath := configFilePath(configDirPath, sInfo.resourceName)
-	klog.Infof("configuration file path is %q", fullPath)
-	conf, err := readConfig(fullPath)
+	conf, err := deviceconfig.Parse(configDirPath, sInfo.resourceName)
 	if err != nil {
-		klog.Fatalf("Unable to read the config, Error: %v", err)
+		klog.Fatalf("failed to read deviceconfig; error: %v", err)
 	}
 
 	devsConf := conf.Devices[hostname]
