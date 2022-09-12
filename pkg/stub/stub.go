@@ -36,8 +36,8 @@ type Info struct {
 	nodeName      string
 }
 
-// GetStubAllocFunc creates and returns allocation response for the input allocate request
-func (sInfo *Info) GetStubAllocFunc() func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
+// GetStubAllocateFunc creates and returns allocation response for the input allocate request
+func (sInfo *Info) GetStubAllocateFunc() func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
 	return func(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
 		var responses pluginapi.AllocateResponse
 		for _, req := range r.ContainerRequests {

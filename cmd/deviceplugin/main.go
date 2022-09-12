@@ -18,22 +18,19 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
-	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/stub"
 	"os"
-	"time"
 
-	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 
-	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
-	dm "k8s.io/kubernetes/pkg/kubelet/cm/devicemanager"
+	"github.com/spf13/pflag"
+
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceplugin"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/stub"
 )
 
 const (
 	EnvVarResourceName = "DEVICE_RESOURCE_NAME"
-	socketDir          = "/var/lib/kubelet/device-plugins"
 )
 
 func main() {
@@ -55,20 +52,10 @@ func main() {
 	if err != nil {
 		klog.Fatalf("%v", err)
 	}
-	klog.Infof("pluginSocksDir: %s", socketDir)
 
-	socketPath := socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
-
-	dp1 := dm.NewDevicePluginStub(sInfo.APIDevsConfig, socketPath, sInfo.ResourceName, false, false)
-	if err := dp1.Start(); err != nil {
-		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
-
+	if err = deviceplugin.Execute(sInfo, "", false, false); err != nil {
+		klog.Fatalf("%v", err)
 	}
-	dp1.SetAllocFunc(sInfo.GetStubAllocFunc())
-	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.ResourceName, pluginapi.DevicePluginPath); err != nil {
-		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
-	}
-	select {}
 }
 
 func defaultResName() string {
