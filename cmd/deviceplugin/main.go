@@ -85,17 +85,8 @@ func main() {
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
-	pflag.StringVarP(&sInfo.resourceName, "resource", "r", "", "device plugin resource name")
+	pflag.StringVarP(&sInfo.resourceName, "resource", "r", defaultResName(), "device plugin resource name")
 	pflag.Parse()
-
-	if sInfo.resourceName == "" {
-		sInfo.resourceName = os.Getenv(EnvVarResourceName)
-		klog.Infof("Resource name configured from environ: %q", sInfo.resourceName)
-	}
-	if sInfo.resourceName == "" {
-		klog.Infof("No resource name configured - nothing to do")
-		os.Exit(0)
-	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -156,4 +147,15 @@ func main() {
 		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
 	}
 	select {}
+}
+
+func defaultResName() string {
+	devResourceName, ok := os.LookupEnv(EnvVarResourceName)
+	if !ok {
+		klog.Infof("no resource name configured - nothing to do")
+		os.Exit(0)
+	}
+
+	klog.Infof("resource name configured from environment: %q", devResourceName)
+	return devResourceName
 }
