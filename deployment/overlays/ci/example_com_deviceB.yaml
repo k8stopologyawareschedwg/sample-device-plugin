@@ -1,0 +1,56 @@
+devices:
+  '*':
+    - id: DevB1
+      healthy: true
+      numanode: 0
+    - id: DevB2
+      healthy: true
+      numanode: 0
+    - id: DevB3
+      healthy: true
+      numanode: 0
+    - id: DevB4
+      healthy: true
+      numanode: 0
+    - id: DevB5
+      healthy: true
+      numanode: 0
+    - id: DevB6
+      healthy: true
+      numanode: 0
+    - id: DevB7
+      healthy: true
+      numanode: 0
+    - id: DevB8
+      healthy: true
+      numanode: 0
+    - id: DevB9
+      healthy: true
+      numanode: 0
+    - id: DevB10
+      healthy: true
+      numanode: 0
+    - id: DevB11
+      healthy: true
+      numanode: 1
+    - id: DevB12
+      healthy: true
+      numanode: 1
+    - id: DevB13
+      healthy: true
+      numanode: 1
+    - id: DevB14
+      healthy: true
+      numanode: 1
+    - id: DevB15
+      healthy: true
+      numanode: 1
+    - id: DevB16
+      healthy: true
+      numanode: 1
+    - id: DevB17
+      healthy: true
+      numanode: 1
+    - id: DevB18
+      healthy: true
+      numanode: 1
