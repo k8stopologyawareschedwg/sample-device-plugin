@@ -18,195 +18,53 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
-
-	"github.com/davecgh/go-spew/spew"
-	"github.com/spf13/pflag"
-	"gopkg.in/yaml.v2"
 
 	"k8s.io/klog/v2"
 
-	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
-	dm "k8s.io/kubernetes/pkg/kubelet/cm/devicemanager"
+	"github.com/spf13/pflag"
 
-	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceplugin"
+	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/stub"
 )
 
 const (
 	EnvVarResourceName = "DEVICE_RESOURCE_NAME"
-	DefaultDevicePath  = "/dev/null"
-
-	socketDir = "/var/lib/kubelet/device-plugins"
 )
-
-type deviceConfig struct {
-	ID       string `yaml:"id"`
-	Healthy  bool   `yaml:"healthy"`
-	NUMANode int    `yaml:"numanode"`
-}
-
-func (dc deviceConfig) ToHealthy() string {
-	if dc.Healthy {
-		return pluginapi.Healthy
-	}
-	return pluginapi.Unhealthy
-}
-
-type pluginConfig struct {
-	Devices map[string][]deviceConfig `yaml:"devices"`
-}
-
-type stubInfo struct {
-	resourceName string
-}
-
-// stubAllocFunc creates and returns allocation response for the input allocate request
-func (sInfo *stubInfo) stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Device) (*pluginapi.AllocateResponse, error) {
-	var responses pluginapi.AllocateResponse
-	for _, req := range r.ContainerRequests {
-		response := &pluginapi.ContainerAllocateResponse{}
-		env := make(map[string]string)
-
-		for _, requestID := range req.DevicesIDs {
-			dev, ok := devs[requestID]
-			if !ok {
-				return nil, fmt.Errorf("invalid allocation request with non-existing device %s", requestID)
-			}
-
-			if dev.Health != pluginapi.Healthy {
-				return nil, fmt.Errorf("invalid allocation request with unhealthy device: %s", requestID)
-			}
-
-			for key, val := range fakedevice.MakeEnv(sInfo.resourceName, dev) {
-				env[key] = val
-			}
-
-			response.Devices = append(response.Devices, &pluginapi.DeviceSpec{
-				ContainerPath: DefaultDevicePath,
-				HostPath:      DefaultDevicePath,
-				Permissions:   "rw",
-			})
-		}
-		response.Envs = env
-		responses.ContainerResponses = append(responses.ContainerResponses, response)
-	}
-
-	return &responses, nil
-}
-
-func readConfig(path string) (*pluginConfig, error) {
-	var conf pluginConfig
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(b, &conf)
-	if err != nil {
-		return nil, err
-	}
-	return &conf, nil
-}
-
-func configFilePath(configDirPath, resourceName string) string {
-	configFileName := fmt.Sprintf("%s.yaml", strings.Map(func(r rune) rune {
-		if r == '.' || r == '/' {
-			return '_'
-		}
-		return r
-	}, resourceName))
-	return filepath.Join(configDirPath, configFileName)
-}
 
 func main() {
 	configDirPath := ""
-	sInfo := &stubInfo{}
+	devResourceName := ""
 
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
-	pflag.StringVarP(&sInfo.resourceName, "resource", "r", "", "device plugin resource name")
+	pflag.StringVarP(&devResourceName, "resource", "r", defaultResName(), "device plugin resource name")
 	pflag.Parse()
 
-	if configDirPath == "" {
-		klog.Infof("No config provided - nothing to do")
-		os.Exit(0)
-	}
-
-	if sInfo.resourceName == "" {
-		sInfo.resourceName = os.Getenv(EnvVarResourceName)
-		klog.Infof("Resource name configured from environ: %q", sInfo.resourceName)
-	}
-	if sInfo.resourceName == "" {
-		klog.Infof("No resource name configured - nothing to do")
-		os.Exit(0)
-	}
-
-	hostname, err := os.Hostname()
+	conf, err := deviceconfig.Parse(configDirPath, devResourceName)
 	if err != nil {
-		klog.Fatalf("Unable to get the hostname, Error: %v", err)
+		klog.Fatalf("failed to read deviceconfig; error: %v", err)
 	}
 
-	fullPath := configFilePath(configDirPath, sInfo.resourceName)
-	klog.Infof("configuration file path is %q", fullPath)
-	conf, err := readConfig(fullPath)
+	sInfo, err := stub.New(devResourceName, conf, "", "")
 	if err != nil {
-		klog.Fatalf("Unable to read the config, Error: %v", err)
+		klog.Fatalf("%v", err)
 	}
 
-	devsConf := conf.Devices[hostname]
-	if len(devsConf) == 0 {
-		devsConf = conf.Devices["*"]
+	if err = deviceplugin.Execute(sInfo, "", false, false); err != nil {
+		klog.Fatalf("%v", err)
 	}
-	if len(devsConf) == 0 {
-		klog.Infof("No devices configured for %q - nothing to do", hostname)
+}
+
+func defaultResName() string {
+	devResourceName, ok := os.LookupEnv(EnvVarResourceName)
+	if !ok {
+		klog.Infof("no resource name configured - nothing to do")
 		os.Exit(0)
 	}
 
-	klog.V(4).Infof("Devices config: %s", spew.Sdump(devsConf))
-
-	var devs []*pluginapi.Device
-	for _, devConf := range devsConf {
-		var topo *pluginapi.TopologyInfo
-		if devConf.NUMANode != -1 {
-			topo = &pluginapi.TopologyInfo{
-				Nodes: []*pluginapi.NUMANode{
-					{ID: int64(devConf.NUMANode)},
-				},
-			}
-		}
-		dev := &pluginapi.Device{
-			ID:       devConf.ID,
-			Health:   devConf.ToHealthy(),
-			Topology: topo,
-		}
-		devs = append(devs, dev)
-	}
-
-	if len(devs) == 0 {
-		klog.Infof("No devices enabled for resource %q - nothing to do", sInfo.resourceName)
-		os.Exit(0)
-	}
-
-	klog.V(3).Infof("Devices: %s", spew.Sdump(devs))
-	klog.Infof("pluginSocksDir: %s", socketDir)
-
-	socketPath := socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
-
-	dp1 := dm.NewDevicePluginStub(devs, socketPath, sInfo.resourceName, false, false)
-	if err := dp1.Start(); err != nil {
-		klog.Fatalf("Unable to start the DevicePlugin, Error: %v", err)
-
-	}
-	dp1.SetAllocFunc(sInfo.stubAllocFunc)
-	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.resourceName, pluginapi.DevicePluginPath); err != nil {
-		klog.Fatalf("Unable to register the DevicePlugin, Error: %v", err)
-	}
-	select {}
+	klog.Infof("resource name configured from environment: %q", devResourceName)
+	return devResourceName
 }
