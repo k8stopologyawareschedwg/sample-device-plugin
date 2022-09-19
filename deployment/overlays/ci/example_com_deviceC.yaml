@@ -1,0 +1,23 @@
+devices:
+  '*':
+    - id: DevC1
+      healthy: true
+      numanode: 0
+    - id: DevC2
+      healthy: true
+      numanode: 0
+    - id: DevC3
+      healthy: true
+      numanode: 0
+    - id: DevC4
+      healthy: true
+      numanode: 0
+    - id: DevC5
+      healthy: true
+      numanode: 0
+    - id: DevC6
+      healthy: true
+      numanode: 0
+    - id: DevC7
+      healthy: true
+      numanode: 0
