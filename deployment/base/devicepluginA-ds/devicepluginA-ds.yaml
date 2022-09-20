@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: device-plugin-a-ds
-  labels:
-    app: sample-device-plugin
 spec:
   selector:
       matchLabels:

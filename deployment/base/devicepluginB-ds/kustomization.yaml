@@ -4,7 +4,8 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../devicepluginA
-  - ../devicepluginB
-  - ../devicepluginC
+  - devicepluginB-ds.yaml
 
+generatorOptions:
+  labels:
+    app: sample-device-plugin
