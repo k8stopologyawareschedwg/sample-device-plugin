@@ -69,7 +69,8 @@ test-both:
 .PHONY: deploy-A
 deploy-A:
 	@echo "Deploying device plugin A"
-	kubectl create -f manifests/devicepluginA-ds.yaml
+	$(eval KUSTOMIZE_DEPLOY_DIR = devicepluginA)
+	kubectl apply -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: test-A
 test-A:
@@ -79,7 +80,8 @@ test-A:
 .PHONY: deploy-B
 deploy-B:
 	@echo "Deploying device plugin B"
-	kubectl create -f manifests/devicepluginB-ds.yaml
+	$(eval KUSTOMIZE_DEPLOY_DIR = devicepluginB)
+	kubectl apply -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: test-B
 test-B:

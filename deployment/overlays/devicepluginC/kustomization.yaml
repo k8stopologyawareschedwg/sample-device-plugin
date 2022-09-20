@@ -4,15 +4,10 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../../base
+  - ../../base/namespace
+  - ../../base/devicepluginC-ds
 
 configMapGenerator:
-  - name: device-a-configmap
-    files:
-      - example_com_deviceA.yaml
-  - name: device-b-configmap
-    files:
-      - example_com_deviceB.yaml
   - name: device-c-configmap
     files:
       - example_com_deviceC.yaml
