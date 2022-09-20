@@ -3,8 +3,10 @@ kind: Kustomization
 
 namespace: sample-device-plugin
 
-resources:
-  - ../devicepluginA
-  - ../devicepluginB
-  - ../devicepluginC
+bases:
+- ../../base/devicepluginA-base
+- ../../base/devicepluginB-base
+- ../../base/devicepluginC-base
 
+resources:
+- namespace.yaml

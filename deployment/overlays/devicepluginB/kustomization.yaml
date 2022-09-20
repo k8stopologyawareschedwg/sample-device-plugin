@@ -3,14 +3,8 @@ kind: Kustomization
 
 namespace: sample-device-plugin
 
+bases:
+- ../../base/devicepluginB-base
+
 resources:
-  - ../../base/devicepluginB-ds
-
-configMapGenerator:
-  - name: device-b-configmap
-    files:
-      - example_com_deviceB.yaml
-
-generatorOptions:
-  labels:
-    app: sample-device-plugin
+- namespace.yaml

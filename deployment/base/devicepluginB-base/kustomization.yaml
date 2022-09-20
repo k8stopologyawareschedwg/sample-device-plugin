@@ -6,6 +6,11 @@ namespace: sample-device-plugin
 resources:
   - devicepluginB-ds.yaml
 
+configMapGenerator:
+  - name: device-b-configmap
+    files:
+      - example_com_deviceB.yaml
+
 generatorOptions:
   labels:
     app: sample-device-plugin
