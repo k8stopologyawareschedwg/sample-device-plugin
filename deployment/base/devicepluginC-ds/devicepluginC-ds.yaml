@@ -15,7 +15,7 @@ spec:
     spec:
       hostNetwork: true
       containers:
-      - name: device-plugin-a-container
+      - name: device-plugin-c-container
         image: quay.io/k8stopologyawareschedwg/sample-device-plugin:v0.1.2
         command:
           - /bin/deviceplugin

@@ -4,11 +4,14 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../../base/devicepluginA-ds-ocp
-  - ../../base/devicepluginB-ds-ocp
-  - ../../base/devicepluginC-ds-ocp
+  - ../../base/devicepluginA-ds
+  - ../../base/devicepluginB-ds
+  - ../../base/devicepluginC-ds
   - ../../base/rbac
   - ../../base/namespace
+
+patchesStrategicMerge:
+  - add_service_account.yaml
 
 configMapGenerator:
   - name: device-a-configmap
