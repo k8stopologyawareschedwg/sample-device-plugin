@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sample-dp
+  namespace: sample-device-plugin
+subjects:
+- kind: ServiceAccount
+  name: sample-dp
+  namespace: sample-device-plugin
+roleRef:
+  kind: Role
+  name: sample-dp
+  apiGroup: rbac.authorization.k8s.io

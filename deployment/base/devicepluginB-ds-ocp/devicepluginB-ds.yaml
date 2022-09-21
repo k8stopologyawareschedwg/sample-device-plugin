@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: device-plugin-b-ds
+  labels:
+    app: sample-device-plugin
+spec:
+  selector:
+      matchLabels:
+        name: device-plugin-b
+  template:
+    metadata:
+      labels:
+        name: device-plugin-b
+    spec:
+      serviceAccountName: sample-dp
+      hostNetwork: true
+      containers:
+      - name: device-plugin-b-container
+        image: quay.io/k8stopologyawareschedwg/sample-device-plugin:v0.1.2
+        command:
+          - /bin/deviceplugin
+        args:
+          - --alsologtostderr
+          - --config-dir=/etc/devices
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DEVICE_RESOURCE_NAME
+          value: "example.com/deviceB"
+        volumeMounts:
+        - name: kubeletsockets
+          mountPath: /var/lib/kubelet/device-plugins
+        - mountPath: /etc/devices
+          name: device-b-config-vol
+      volumes:
+      - name: kubeletsockets
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - configMap:
+          name: device-b-configmap
+        name: device-b-config-vol

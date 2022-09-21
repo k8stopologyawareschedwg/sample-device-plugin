@@ -4,9 +4,10 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../../base/devicepluginA-ds
-  - ../../base/devicepluginB-ds
-  - ../../base/devicepluginC-ds
+  - ../../base/devicepluginA-ds-ocp
+  - ../../base/devicepluginB-ds-ocp
+  - ../../base/devicepluginC-ds-ocp
+  - ../../base/rbac
   - ../../base/namespace
 
 configMapGenerator:
