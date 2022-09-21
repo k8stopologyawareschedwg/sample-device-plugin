@@ -5,6 +5,7 @@ REPOOWNER ?= k8stopologyawareschedwg
 IMAGENAME ?= sample-device-plugin
 IMAGETAG ?= latest
 SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE ?= quay.io/${REPOOWNER}/${IMAGENAME}/${IMAGETAG}
+KUSTOMIZE_DEPLOY_DIR ?= default
 
 .PHONY: all
 all: build
@@ -44,14 +45,12 @@ push: image
 .PHONY: deploy
 deploy:
 	@echo "Deploying device plugins"
-	kubectl create -f manifests/devicepluginA-ds.yaml
-	kubectl create -f manifests/devicepluginB-ds.yaml
+	kubectl apply -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: undeploy
 undeploy:
 	@echo "Removing device plugins"
-	kubectl delete -f manifests/devicepluginA-ds.yaml
-	kubectl delete -f manifests/devicepluginB-ds.yaml
+	kubectl delete -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: build-e2e
 build-e2e: outdir
@@ -67,11 +66,11 @@ e2e-test: build-e2e
 test-both:
 	kubectl create -f manifests/test-both-success.yaml
 
-
 .PHONY: deploy-A
 deploy-A:
 	@echo "Deploying device plugin A"
-	kubectl create -f manifests/devicepluginA-ds.yaml
+	$(eval KUSTOMIZE_DEPLOY_DIR = devicepluginA)
+	kubectl apply -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: test-A
 test-A:
@@ -81,7 +80,8 @@ test-A:
 .PHONY: deploy-B
 deploy-B:
 	@echo "Deploying device plugin B"
-	kubectl create -f manifests/devicepluginB-ds.yaml
+	$(eval KUSTOMIZE_DEPLOY_DIR = devicepluginB)
+	kubectl apply -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
 .PHONY: test-B
 test-B:

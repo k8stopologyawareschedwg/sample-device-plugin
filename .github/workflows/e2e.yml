@@ -46,7 +46,7 @@ jobs:
 
       - name: deploy sample-device-plugin
         run: |
-          hack/ci-deploy-devices.sh
+          make deploy
         
       - name: setup-info
         run: |
