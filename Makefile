@@ -52,6 +52,16 @@ undeploy:
 	@echo "Removing device plugins"
 	kubectl delete -k deployment/overlays/$(KUSTOMIZE_DEPLOY_DIR)
 
+.PHONY: deploy
+deploy:
+	@echo "Deploying device plugins on Openshift"
+	kubectl apply -k deployment/overlays/openshift
+
+.PHONY: undeploy
+undeploy:
+	@echo "Removing device plugins from Openshift"
+	kubectl delete -k deployment/overlays/openshift
+
 .PHONY: build-e2e
 build-e2e: outdir
 	@echo "Building E2E tests"
