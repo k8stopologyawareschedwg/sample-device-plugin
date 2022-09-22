@@ -7,10 +7,10 @@ labels:
       app: sample-device-plugin
 
 resources:
-  - ../../base/namespace
-  - ../../base/devicepluginC-ds
+  - ../../../base/namespace
+  - ../../../base/devicepluginB-ds
 
 configMapGenerator:
-  - name: device-c-configmap
+  - name: device-b-configmap
     files:
-      - example_com_deviceC.yaml
+      - example_com_deviceB.yaml

@@ -15,10 +15,10 @@ resources:
 configMapGenerator:
   - name: device-a-configmap
     files:
-      - example_com_deviceA.yaml
+      - devicepluginA/example_com_deviceA.yaml
   - name: device-b-configmap
     files:
-      - example_com_deviceB.yaml
+      - devicepluginB/example_com_deviceB.yaml
   - name: device-c-configmap
     files:
-      - example_com_deviceC.yaml
+      - devicepluginC/example_com_deviceC.yaml
