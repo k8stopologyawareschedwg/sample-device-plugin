@@ -4,26 +4,8 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../../base/devicepluginA-ds
-  - ../../base/devicepluginB-ds
-  - ../../base/devicepluginC-ds
+  - ../default
   - ../../base/rbac
-  - ../../base/namespace
 
 patchesStrategicMerge:
   - add_service_account.yaml
-
-configMapGenerator:
-  - name: device-a-configmap
-    files:
-      - example_com_deviceA.yaml
-  - name: device-b-configmap
-    files:
-      - example_com_deviceB.yaml
-  - name: device-c-configmap
-    files:
-      - example_com_deviceC.yaml
-
-generatorOptions:
-  labels:
-    app: sample-device-plugin
