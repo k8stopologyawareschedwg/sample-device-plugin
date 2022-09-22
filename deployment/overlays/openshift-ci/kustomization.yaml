@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: sample-device-plugin
 
 resources:
-  - ../default
+  - ../ci
   - ../../base/rbac
 
 patchesStrategicMerge:
