@@ -3,7 +3,3 @@ kind: Kustomization
 
 resources:
   - devicepluginC-ds.yaml
-
-generatorOptions:
-  labels:
-    app: sample-device-plugin
