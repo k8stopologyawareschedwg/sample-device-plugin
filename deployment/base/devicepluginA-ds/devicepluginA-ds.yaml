@@ -14,22 +14,28 @@ spec:
       hostNetwork: true
       containers:
       - name: device-plugin-a-container
-        image: quay.io/k8stopologyawareschedwg/sample-device-plugin:v0.1.2
+        image: quay.io/titzhak/sample-device-plugin:dev_recover_test
         command:
           - /bin/deviceplugin
         args:
           - --alsologtostderr
           - --config-dir=/etc/devices
+          - --volume-mount-path=/var/run
         imagePullPolicy: IfNotPresent
         env:
         - name: DEVICE_RESOURCE_NAME
           value: "example.com/deviceA"
         volumeMounts:
+        - name: host-var-run
+          mountPath: /host-var/run
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
         - name: device-a-config-vol
           mountPath: /etc/devices
       volumes:
+      - name: host-var-run
+        hostPath:
+          path:  /var/run
       - name: kubeletsockets
         hostPath:
           path: /var/lib/kubelet/device-plugins

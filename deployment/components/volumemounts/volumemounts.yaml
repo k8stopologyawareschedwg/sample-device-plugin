@@ -1,0 +1,12 @@
+- op: add
+  path: /spec/template/spec/volumes
+  value:
+    - name: host-var-run
+      hostPath:
+        path: /var/run
+
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts
+  value:
+    - name: host-var-run
+      mountPath: /host-var/run

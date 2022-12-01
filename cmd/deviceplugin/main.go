@@ -36,19 +36,20 @@ const (
 func main() {
 	configDirPath := ""
 	devResourceName := ""
+	volumeMountPath := ""
 
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
 	pflag.StringVarP(&devResourceName, "resource", "r", defaultResName(), "device plugin resource name")
+	pflag.StringVarP(&volumeMountPath, "volume-mount-path", "vol", stub.DefaultDevicePath, "device plugin volume to be mounted into the pod requesting device")
 	pflag.Parse()
 
 	conf, err := deviceconfig.Parse(configDirPath, devResourceName)
 	if err != nil {
 		klog.Fatalf("failed to read deviceconfig; error: %v", err)
 	}
-
-	sInfo, err := stub.New(devResourceName, conf, "", "")
+	sInfo, err := stub.New(devResourceName, conf, "", "", volumeMountPath)
 	if err != nil {
 		klog.Fatalf("%v", err)
 	}

@@ -18,10 +18,10 @@ package stub
 
 import (
 	"fmt"
-	"os"
-
 	"k8s.io/klog/v2"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
+	"os"
+	"path"
 
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
@@ -30,10 +30,11 @@ import (
 const DefaultDevicePath = "/dev/null"
 
 type Info struct {
-	ResourceName  string
-	APIDevsConfig []*pluginapi.Device
-	devicePath    string
-	nodeName      string
+	ResourceName    string
+	APIDevsConfig   []*pluginapi.Device
+	devicePath      string
+	nodeName        string
+	hostVolumeMount string
 }
 
 // GetStubAllocateFunc creates and returns allocation response for the input allocate request
@@ -63,6 +64,16 @@ func (sInfo *Info) GetStubAllocateFunc() func(r *pluginapi.AllocateRequest, devs
 					HostPath:      DefaultDevicePath,
 					Permissions:   "rw",
 				})
+
+				response.Mounts = append(response.Mounts, &pluginapi.Mount{
+					ContainerPath: "/sample-device/",
+					HostPath:      sInfo.hostVolumeMount,
+					ReadOnly:      true,
+				})
+				_, err := os.Create(path.Join(sInfo.hostVolumeMount, "test-file"))
+				if err != nil {
+					return nil, fmt.Errorf("failed to create a file: %v", err)
+				}
 			}
 			response.Envs = env
 			responses.ContainerResponses = append(responses.ContainerResponses, response)
@@ -71,7 +82,7 @@ func (sInfo *Info) GetStubAllocateFunc() func(r *pluginapi.AllocateRequest, devs
 	}
 }
 
-func New(resourceName string, nodeDevicesConfig *deviceconfig.NodesDevices, devicePath, nodeName string) (*Info, error) {
+func New(resourceName string, nodeDevicesConfig *deviceconfig.NodesDevices, devicePath, nodeName, volumeMount string) (*Info, error) {
 	if devicePath == "" {
 		klog.Infof("using default device type path: %q", DefaultDevicePath)
 		devicePath = DefaultDevicePath
@@ -101,10 +112,11 @@ func New(resourceName string, nodeDevicesConfig *deviceconfig.NodesDevices, devi
 	klog.V(4).Infof("devices: %v", devs)
 
 	return &Info{
-		ResourceName:  resourceName,
-		APIDevsConfig: devs,
-		devicePath:    devicePath,
-		nodeName:      nodeName,
+		ResourceName:    resourceName,
+		APIDevsConfig:   devs,
+		devicePath:      devicePath,
+		nodeName:        nodeName,
+		hostVolumeMount: volumeMount,
 	}, nil
 }
 
