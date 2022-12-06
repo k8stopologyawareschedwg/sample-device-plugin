@@ -14,15 +14,13 @@ spec:
       hostNetwork: true
       containers:
       - name: device-plugin-a-container
-        image: quay.io/swsehgal/sample-device-plugin:dev-rec
-        command: [ "/bin/sh", "-c", "--" ]
-        args: [ "while true; do sleep 1000; done;" ]
-        # command:
-        #   - /bin/deviceplugin
-        # args:
-        #   - --alsologtostderr
-        #   - --config-dir=/etc/devices
-        #   - --volume-mount-path=/host-var/run
+        image: quay.io/swsehgal/sample-device-plugin:device-recovery-final
+        command:
+          - /bin/deviceplugin
+        args:
+          - --alsologtostderr
+          - --config-dir=/etc/devices
+          - --volume-mount-path=/host-var/run
         imagePullPolicy: IfNotPresent
         env:
         - name: DEVICE_RESOURCE_NAME

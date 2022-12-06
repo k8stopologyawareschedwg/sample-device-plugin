@@ -44,13 +44,13 @@ func Execute(sInfo *stub.Info, socket string, preStartContainerFlag bool, getPre
 	}
 
 	dp1.SetAllocFunc(sInfo.GetStubAllocateFunc())
-	filePath := filepath.Join(sInfo.HostVolumeMount, "test-file")
+	filePath := filepath.Join(sInfo.HostVolumeMount)
 	klog.Infof("filePath: %v", filePath)
-	// _, err := os.Stat(filePath)
-	// if err != nil {
-	// 	return fmt.Errorf("file does not exist: %v ", err)
-	// }
-	// klog.Infof("File exists: %v", filePath)
+	_, err := os.Stat(filePath)
+	if err != nil {
+		return fmt.Errorf("file does not exist: %v ", err)
+	}
+	klog.Infof("File exists: %v", filePath)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("NewWatcher failed: %v ", err)
@@ -78,12 +78,6 @@ func Execute(sInfo *stub.Info, socket string, preStartContainerFlag bool, getPre
 				case event.Op&fsnotify.Create == fsnotify.Create:
 					klog.Infof("Create: %s: %s", event.Op, event.Name)
 					updateCh <- true
-					// case event.Op&fsnotify.Remove == fsnotify.Remove:
-					// 	klog.Infof("Remove: %s: %s", event.Op, event.Name)
-					// 	removeCh <- true
-					// case event.Op&fsnotify.Rename == fsnotify.Rename:
-					// 	klog.Infof("Rename: %s: %s", event.Op, event.Name)
-					// 	renameCh <- true
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -107,32 +101,5 @@ func Execute(sInfo *stub.Info, socket string, preStartContainerFlag bool, getPre
 	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.ResourceName, pluginapi.DevicePluginPath); err != nil {
 		return fmt.Errorf("unable to register the DevicePlugin; error: %w", err)
 	}
-	// klog.Infof("Creating file after registration has succeeded %s", filepath.Join(sInfo.HostVolumeMount, "test-file"))
-	// file, err := os.Create(filepath.Join(sInfo.HostVolumeMount, "test-file"))
-	// if err != nil {
-	// 	return fmt.Errorf("failed to create a file: %v", err)
-	// }
-	// defer file.Close()
-
-	// _, err = file.WriteString("registered")
-	// if err != nil {
-	// 	return fmt.Errorf("failed to write to file: %v", err)
-	// }
 	select {}
-}
-
-func waitUntilFind(filename string) error {
-	for {
-		time.Sleep(1 * time.Second)
-		_, err := os.Stat(filename)
-		if err != nil {
-			if os.IsNotExist(err) {
-				continue
-			} else {
-				return err
-			}
-		}
-		break
-	}
-	return nil
 }
