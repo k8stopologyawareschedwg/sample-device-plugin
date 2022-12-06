@@ -42,7 +42,7 @@ func main() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
 	pflag.StringVarP(&devResourceName, "resource", "r", defaultResName(), "device plugin resource name")
-	pflag.StringVarP(&volumeMountPath, "volume-mount-path", "vol", stub.DefaultDevicePath, "device plugin volume to be mounted into the pod requesting device")
+	pflag.StringVarP(&volumeMountPath, "volume-mount-path", "m", stub.DefaultDevicePath, "device plugin volume to be mounted into the pod requesting device")
 	pflag.Parse()
 
 	conf, err := deviceconfig.Parse(configDirPath, devResourceName)

@@ -18,10 +18,10 @@ package stub
 
 import (
 	"fmt"
+	"os"
+
 	"k8s.io/klog/v2"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
-	"os"
-	"path"
 
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/deviceconfig"
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/fakedevice"
@@ -34,7 +34,7 @@ type Info struct {
 	APIDevsConfig   []*pluginapi.Device
 	devicePath      string
 	nodeName        string
-	hostVolumeMount string
+	HostVolumeMount string
 }
 
 // GetStubAllocateFunc creates and returns allocation response for the input allocate request
@@ -58,22 +58,18 @@ func (sInfo *Info) GetStubAllocateFunc() func(r *pluginapi.AllocateRequest, devs
 				for key, val := range fakedevice.MakeEnv(sInfo.ResourceName, dev) {
 					env[key] = val
 				}
+				response.Devices = append(response.Devices,
+					&pluginapi.DeviceSpec{
+						ContainerPath: DefaultDevicePath,
+						HostPath:      DefaultDevicePath,
+						Permissions:   "rw",
+					})
 
-				response.Devices = append(response.Devices, &pluginapi.DeviceSpec{
-					ContainerPath: DefaultDevicePath,
-					HostPath:      DefaultDevicePath,
-					Permissions:   "rw",
-				})
-
-				response.Mounts = append(response.Mounts, &pluginapi.Mount{
-					ContainerPath: "/sample-device/",
-					HostPath:      sInfo.hostVolumeMount,
-					ReadOnly:      true,
-				})
-				_, err := os.Create(path.Join(sInfo.hostVolumeMount, "test-file"))
-				if err != nil {
-					return nil, fmt.Errorf("failed to create a file: %v", err)
-				}
+				// response.Mounts = append(response.Mounts, &pluginapi.Mount{
+				// 	ContainerPath: "/sample-device/",
+				// 	HostPath:      sInfo.hostVolumeMount,
+				// 	ReadOnly:      false,
+				// })
 			}
 			response.Envs = env
 			responses.ContainerResponses = append(responses.ContainerResponses, response)
@@ -116,7 +112,7 @@ func New(resourceName string, nodeDevicesConfig *deviceconfig.NodesDevices, devi
 		APIDevsConfig:   devs,
 		devicePath:      devicePath,
 		nodeName:        nodeName,
-		hostVolumeMount: volumeMount,
+		HostVolumeMount: volumeMount,
 	}, nil
 }
 
