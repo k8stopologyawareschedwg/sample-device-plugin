@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	"k8s.io/klog/v2"
 
@@ -30,22 +31,32 @@ import (
 )
 
 const (
-	EnvVarResourceName = "DEVICE_RESOURCE_NAME"
+	EnvVarResourceName    = "DEVICE_RESOURCE_NAME"
+	EnvVarGenerateDevices = "DEVICE_GENERATE_COUNT"
 )
 
 func main() {
 	configDirPath := ""
 	devResourceName := ""
+	generateDevs := 0
 
 	klog.InitFlags(nil)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.StringVarP(&configDirPath, "config-dir", "C", "", "directory which contains the device plugin configuration files")
 	pflag.StringVarP(&devResourceName, "resource", "r", defaultResName(), "device plugin resource name")
+	pflag.IntVarP(&generateDevs, "generate", "G", defaultGenDevs(), "autogenerate devices")
 	pflag.Parse()
 
-	conf, err := deviceconfig.Parse(configDirPath, devResourceName)
-	if err != nil {
-		klog.Fatalf("failed to read deviceconfig; error: %v", err)
+	var conf *deviceconfig.NodesDevices
+
+	if generateDevs > 0 {
+		conf = deviceconfig.Generate(generateDevs)
+	} else {
+		var err error
+		conf, err = deviceconfig.Parse(configDirPath, devResourceName)
+		if err != nil {
+			klog.Fatalf("failed to read deviceconfig; error: %v", err)
+		}
 	}
 
 	sInfo, err := stub.New(devResourceName, conf, "", "")
@@ -67,4 +78,18 @@ func defaultResName() string {
 
 	klog.Infof("resource name configured from environment: %q", devResourceName)
 	return devResourceName
+}
+
+func defaultGenDevs() int {
+	devGenAmount, ok := os.LookupEnv(EnvVarGenerateDevices)
+	if !ok {
+		return 0
+	}
+	devCount, err := strconv.Atoi(devGenAmount)
+	if err != nil {
+		klog.Errorf("failed to convert device count %q err %s", devGenAmount, err)
+		return 0
+	}
+	klog.Infof("autogenerate syntetic device count %d", devCount)
+	return devCount
 }

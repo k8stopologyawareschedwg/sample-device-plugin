@@ -139,3 +139,55 @@ devices:
 		}
 	}
 }
+
+func TestGenerate(t *testing.T) {
+	testCases := []struct {
+		name     string
+		count    int
+		expected *NodesDevices
+	}{
+		{
+			name:  "no devices",
+			count: 0,
+			expected: &NodesDevices{
+				Devices: map[string][]SampleDevice{
+					"*": {},
+				},
+			},
+		},
+		{
+			name:  "typical devices amount",
+			count: 3,
+			expected: &NodesDevices{
+				Devices: map[string][]SampleDevice{
+					"*": {
+						{
+							ID:       "Dev-0",
+							Healthy:  true,
+							NUMANode: -1,
+						},
+						{
+							ID:       "Dev-1",
+							Healthy:  true,
+							NUMANode: -1,
+						},
+						{
+							ID:       "Dev-2",
+							Healthy:  true,
+							NUMANode: -1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Generate(tc.count)
+			if diff := cmp.Diff(tc.expected, got); diff != "" {
+				t.Errorf("generation mismatch; diff %v", diff)
+			}
+		})
+	}
+}
