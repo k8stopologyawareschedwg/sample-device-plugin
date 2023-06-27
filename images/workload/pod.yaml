@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: sample-device-workload
+  name: sample-device-workload
+  namespace: sample-device-plugin
+spec:
+  containers:
+    - command:
+        - /bin/workload
+      image: quay.io/k8stopologyawareschedwg/sample-device-workload:latest
+      imagePullPolicy: Always
+      name: sample-device-workload
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1Gi
+          example.com/deviceA: 1
+        requests:
+          cpu: "1"
+          memory: 1Gi
+          example.com/deviceA: 1

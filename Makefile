@@ -3,8 +3,10 @@ BUILDENVVAR = CGO_ENABLED=0
 RUNTIME ?= podman
 REPOOWNER ?= k8stopologyawareschedwg
 IMAGENAME ?= sample-device-plugin
+IMAGENAME_WORKLOAD ?= sample-device-workload
 IMAGETAG ?= latest
 SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE ?= quay.io/${REPOOWNER}/${IMAGENAME}:${IMAGETAG}
+SAMPLE_DEVICE_WORKLOAD_CONTAINER_IMAGE ?= quay.io/${REPOOWNER}/${IMAGENAME_WORKLOAD}:${IMAGETAG}
 KUSTOMIZE_DEPLOY_DIR ?= default
 
 .PHONY: all
@@ -32,6 +34,11 @@ image: build
 	@echo "building image"
 	$(RUNTIME) build -f images/Dockerfile -t $(SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE) .
 
+.PHONY: image-workload
+image-workload:
+	@echo "building image for sample workload"
+	$(RUNTIME) build -f images/workload/Dockerfile -t $(SAMPLE_DEVICE_WORKLOAD_CONTAINER_IMAGE) images/workload
+
 .PHONY: unit-tests
 unit-tests:
 	@echo "running unit tests"
@@ -41,6 +48,11 @@ unit-tests:
 push: image
 	@echo "pushing image"
 	$(RUNTIME) push $(SAMPLE_DEVICE_PLUGIN_CONTAINER_IMAGE)
+
+.PHONY: push-workload
+push-workload: image-workload
+	@echo "pushing image for sample workload"
+	$(RUNTIME) push $(SAMPLE_DEVICE_WORKLOAD_CONTAINER_IMAGE)
 
 .PHONY: deploy
 deploy:
