@@ -1,11 +1,12 @@
 package deviceconfig
 
 import (
-	"github.com/google/go-cmp/cmp"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestParse(t *testing.T) {
@@ -125,18 +126,19 @@ devices:
 	}(confDir)
 
 	for _, tc := range testCases {
-		t.Logf("test %s", tc.name)
-		fullFilePath := filepath.Join(confDir, tc.confFileName)
-		if err := ioutil.WriteFile(fullFilePath, tc.conf, 0644); err != nil {
-			t.Fatalf("failed to write to %q", fullFilePath)
-		}
-		devices, err := Parse(confDir, tc.resName)
-		if err != nil {
-			t.Errorf("failed to parse conf file %q with resource name %q; error: %v", fullFilePath, tc.resName, err)
-		}
-		if diff := cmp.Diff(tc.expected, devices); diff != "" {
-			t.Errorf("configuration mismatch; diff %v", diff)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			fullFilePath := filepath.Join(confDir, tc.confFileName)
+			if err := ioutil.WriteFile(fullFilePath, tc.conf, 0644); err != nil {
+				t.Fatalf("failed to write to %q", fullFilePath)
+			}
+			devices, err := Parse(confDir, tc.resName)
+			if err != nil {
+				t.Errorf("failed to parse conf file %q with resource name %q; error: %v", fullFilePath, tc.resName, err)
+			}
+			if diff := cmp.Diff(tc.expected, devices); diff != "" {
+				t.Errorf("configuration mismatch; diff %v", diff)
+			}
+		})
 	}
 }
 
