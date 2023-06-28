@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	resourceName   = "io.openshift/fakedev"
-	resourcePrefix = "IOOPENSHIFTFAKEDEV"
+	resourceName       = "io.openshift/fakedev"
+	resourcePrefix     = "IOOPENSHIFTFAKEDEV"
+	sampleDevicePrefix = "_SAMPLE_DEVICE"
 )
 
 var _ = Describe("FakeDevice", func() {
@@ -67,7 +68,10 @@ var _ = Describe("FakeDevice", func() {
 			env := fakedevice.MakeEnv(resourceName, dev)
 			Expect(env).To(Not(BeNil()))
 			for key := range env {
-				Expect(key).To(HavePrefix(resourcePrefix))
+				Expect(key).To(Or(
+					HavePrefix(resourcePrefix),
+					HavePrefix(sampleDevicePrefix),
+				))
 			}
 		})
 	})

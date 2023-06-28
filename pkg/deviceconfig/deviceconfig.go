@@ -44,7 +44,7 @@ type NodesDevices struct {
 }
 
 func Parse(path, resName string) (*NodesDevices, error) {
-	var conf *NodesDevices
+	var conf NodesDevices
 	if path == "" {
 		return nil, fmt.Errorf("deviceconfig path must be provided - nothing to do")
 	}
@@ -59,7 +59,23 @@ func Parse(path, resName string) (*NodesDevices, error) {
 	if err != nil {
 		return nil, err
 	}
-	return conf, nil
+	return &conf, nil
+}
+
+func Generate(count int) *NodesDevices {
+	devs := []SampleDevice{}
+	for idx := 0; idx < count; idx++ {
+		devs = append(devs, SampleDevice{
+			ID:       fmt.Sprintf("Dev-%d", idx),
+			Healthy:  true,
+			NUMANode: -1,
+		})
+	}
+	return &NodesDevices{
+		Devices: map[string][]SampleDevice{
+			"*": devs,
+		},
+	}
 }
 
 func getDevPath(configDirPath, resourceName string) string {

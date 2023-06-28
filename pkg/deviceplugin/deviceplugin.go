@@ -18,6 +18,7 @@ package deviceplugin
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -27,22 +28,49 @@ import (
 	"github.com/k8stopologyawareschedwg/sample-device-plugin/pkg/stub"
 )
 
-const socketDir = "/var/lib/kubelet/device-plugins"
+const (
+	socketDir     = "/var/lib/kubelet/device-plugins"
+	watchInterval = 1 * time.Second
+)
 
 func Execute(sInfo *stub.Info, socket string, preStartContainerFlag bool, getPreferredAllocationFlag bool) error {
-	if socket == "" {
-		klog.Infof("pluginSocksDir: %s", socketDir)
-		socket = socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
-	}
+	for {
+		if socket == "" {
+			klog.Infof("pluginSocksDir: %s", socketDir)
+			socket = socketDir + "/dp." + fmt.Sprintf("%d", time.Now().Unix())
+		}
 
-	dp1 := dm.NewDevicePluginStub(sInfo.APIDevsConfig, socket, sInfo.ResourceName, preStartContainerFlag, getPreferredAllocationFlag)
-	if err := dp1.Start(); err != nil {
-		return fmt.Errorf("unable to start the DevicePlugin; error: %w", err)
-	}
+		klog.InfoS("Creating the DevicePlugin", "socket", socket, "resourceName", sInfo.ResourceName)
+		dp1 := dm.NewDevicePluginStub(sInfo.APIDevsConfig, socket, sInfo.ResourceName, preStartContainerFlag, getPreferredAllocationFlag)
+		if err := dp1.Start(); err != nil {
+			return fmt.Errorf("unable to start the DevicePlugin; error: %w", err)
+		}
 
-	dp1.SetAllocFunc(sInfo.GetStubAllocateFunc())
-	if err := dp1.Register(pluginapi.KubeletSocket, sInfo.ResourceName, pluginapi.DevicePluginPath); err != nil {
-		return fmt.Errorf("unable to register the DevicePlugin; error: %w", err)
+		dp1.SetAllocFunc(sInfo.GetStubAllocateFunc())
+
+		klog.InfoS("Registering the DevicePlugin", "endpoint", pluginapi.KubeletSocket, "resourceName", sInfo.ResourceName, "devicePluginPath", pluginapi.DevicePluginPath)
+		if err := dp1.Register(pluginapi.KubeletSocket, sInfo.ResourceName, pluginapi.DevicePluginPath); err != nil {
+			return fmt.Errorf("unable to register the DevicePlugin; error: %w", err)
+		}
+
+		klog.InfoS("Entering the DevicePlugin wait loop", "watchInterval", watchInterval)
+		running := true
+		for running {
+			_, err := os.Lstat(socket)
+			if err != nil {
+				// Socket file not found; restart server
+				klog.ErrorS(err, "server endpoint not found, re-registering", "socketPath", socket)
+				running = false
+				continue
+			}
+
+			time.Sleep(watchInterval)
+		}
+		klog.InfoS("Exited the DevicePlugin wait loop")
+
+		klog.InfoS("Stopping the DevicePlugin")
+		if err := dp1.Stop(); err != nil {
+			return fmt.Errorf("unable to stop the DevicePlugin; error: %w", err)
+		}
 	}
-	select {}
 }
